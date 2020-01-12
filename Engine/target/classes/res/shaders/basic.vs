@@ -1,7 +1,7 @@
 #version 400 core
 
-in vec3 pos;
-in vec2 texCoord;
+attribute vec3 pos;
+attribute vec2 texCoord;
 
 out vec2 texCoordOut;
 //out vec4 col;
@@ -14,5 +14,5 @@ void main() {
     vec4 posT = projectionMat * viewMat * transformMat * vec4(pos, 1.0);
     gl_Position = posT;
     texCoordOut = texCoord;
-//    col = transformMat * vec4(pos,1);
+    //    col = transformMat * vec4(pos,1);
 }

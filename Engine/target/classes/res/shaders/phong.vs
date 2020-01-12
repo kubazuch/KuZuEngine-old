@@ -13,5 +13,5 @@ uniform mat4 normalMat;
 
 void main() {
     gl_Position = projectionMat * viewMat * transformMat *  vec4(pos, 1);
-    vertex_normal = normalize(vec3(projectionMat * normalMat * vec4( normal, 0.0)));
+    vertex_normal = normalize(vec3(projectionMat * normalMat * vec4(normal, 0.0)));
 }

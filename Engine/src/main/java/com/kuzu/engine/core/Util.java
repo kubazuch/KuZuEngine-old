@@ -4,6 +4,7 @@ import com.kuzu.engine.rendering.Vertex;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -15,6 +16,10 @@ public class Util {
 
 	public static IntBuffer createIntBuffer(int size) {
 		return BufferUtils.createIntBuffer(size);
+	}
+
+	public static ByteBuffer createByteBuffer(int size) {
+		return BufferUtils.createByteBuffer(size);
 	}
 
 	public static IntBuffer createFlippedBuffer(int... values) {

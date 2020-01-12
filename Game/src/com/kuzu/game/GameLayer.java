@@ -1,6 +1,9 @@
 package com.kuzu.game;
 
-import com.kuzu.engine.core.*;
+import com.kuzu.engine.core.Input;
+import com.kuzu.engine.core.MainComponent;
+import com.kuzu.engine.core.MouseCode;
+import com.kuzu.engine.core.Transform;
 import com.kuzu.engine.event.MouseEvents;
 import com.kuzu.engine.event.WindowResizeEvent;
 import com.kuzu.engine.rendering.*;
@@ -31,8 +34,8 @@ public class GameLayer extends Layer {
 		System.out.println(layout);
 
 		mesh = new Mesh("cube2.obj");
-		material = new Material(ResourceLoader.loadTexture("uv.png"), new Vector3f(1, 1, 1));
-		basicShader = BasicShader.getInstance();
+		material = new Material(new Texture("uv.png"));
+		basicShader = new BasicShader();
 //		phongShader = PhongShader.getInstance();
 		transform = new Transform();
 		transform.setTranslation(0, 0, -5);
@@ -46,7 +49,7 @@ public class GameLayer extends Layer {
 		camera.setWindowCenter(new Vector2f(width / 2, height / 2));
 
 		basicShader.bind();
-		basicShader.setUniformMat4("projectionMat", camera.getProjection());
+		basicShader.setProjectionMatrix(camera.getProjection());
 		basicShader.unbind();
 
 //		phongShader.bind();
@@ -78,18 +81,9 @@ public class GameLayer extends Layer {
 	@Override
 	public void render() {
 		basicShader.bind();
-		basicShader.setUniformMat4("transformMat", transform.getTransformation());
-		basicShader.setUniformMat4("viewMat", camera.getView());
-//		System.out.println("x");
-//		NumberFormat format = NumberFormat.getInstance();
-//		format.setMinimumFractionDigits(10);
-//		System.out.println(camera.getView().toString(format));
-//		System.out.println(transform.getTransformation().toString(format));
-//		System.out.println(camera.getView().mul(transform.getTransformation(), new Matrix4f()).toString(format));
-//		System.out.println(camera.getView().mul(transform.getTransformation(), new Matrix4f()).invert().toString(format));
-//		System.out.println(camera.getView().mul(transform.getTransformation(), new Matrix4f()).invert().transpose().toString(format));
-//		System.out.println("y");
-		material.getTexture().bind();
+		basicShader.updateUniforms(transform.getTransformation(), camera.getView());
+
+		material.getTexture("diffuse").bind();
 		mesh.draw();
 		basicShader.unbind();
 
@@ -124,7 +118,7 @@ public class GameLayer extends Layer {
 		camera.setWindowCenter(new Vector2f(width / 2, height / 2));
 
 		basicShader.bind();
-		basicShader.setUniformMat4("projectionMat", camera.getProjection());
+		basicShader.setProjectionMatrix(camera.getProjection());
 		basicShader.unbind();
 
 //		phongShader.bind();

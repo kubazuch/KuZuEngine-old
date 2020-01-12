@@ -3,6 +3,7 @@ package com.kuzu.engine.rendering;
 import com.kuzu.engine.core.MainComponent;
 import com.kuzu.engine.rendering.meshLoading.IndexedModel;
 import com.kuzu.engine.rendering.meshLoading.OBJModel;
+import com.kuzu.engine.rendering.resources.MeshResource;
 import org.joml.Vector3f;
 import org.lwjglx.BufferUtils;
 

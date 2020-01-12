@@ -20,7 +20,6 @@ public class MainComponent {
 	private boolean minimized = false;
 
 	private boolean isRunning;
-	//	private Game game;
 //	private RenderingEngine renderingEngine;
 	private int width;
 	private int height;
@@ -38,9 +37,7 @@ public class MainComponent {
 		Input.setWindow(window.getWindowHandle());
 		RenderUtil.initGraphics();
 
-//		game = new Game();
 		windowEventBus.register(this);
-//		windowEventBus.register(game);
 		windowEventBus.register(Input.class);
 	}
 
@@ -87,8 +84,6 @@ public class MainComponent {
 
 		final double frameTime = 1.0 / FRAME_CAP;
 
-//		game.init();
-
 		double lastTime = Time.getTime();
 		double unprocessedTime = 0;
 
@@ -109,10 +104,6 @@ public class MainComponent {
 				if (!minimized) {
 					for (Layer layer : layerStack)
 						layer.onUpdate((float) frameTime);
-
-//					game.input((float)frameTime);
-//
-//					game.update((float)frameTime);
 				}
 
 				if (frameCounter >= 1.0) {
@@ -144,7 +135,6 @@ public class MainComponent {
 			layer.render();
 		}
 
-//		game.render();
 		window.render();
 	}
 

@@ -1,29 +1,38 @@
 package com.kuzu.engine.rendering;
 
-import org.joml.Vector3f;
+import com.kuzu.engine.rendering.resources.MappedValues;
 
-public class Material {
-	private Texture texture;
-	private Vector3f color;
+import java.util.HashMap;
 
-	public Material(Texture texture, Vector3f color) {
-		this.texture = texture;
-		this.color = color;
+public class Material extends MappedValues {
+	private HashMap<String, Texture> textureHashMap;
+
+	public Material(Texture diffuse) {
+		super();
+		textureHashMap = new HashMap<>();
+		addTexture("diffuse", diffuse);
 	}
 
-	public Texture getTexture() {
-		return texture;
+	public Material(Texture diffuse, float specularIntensity, float specularPower, Texture normal,
+	                Texture dispMap, float dispMapScale, float dispMapOffset) {
+		super();
+		textureHashMap = new HashMap<>();
+		addTexture("diffuse", diffuse);
+		addFloat("specularIntensity", specularIntensity);
+		addFloat("specularPower", specularPower);
+		addTexture("normalMap", normal);
+		addTexture("dispMap", dispMap);
+
+		float baseBias = dispMapScale / 2f;
+		addFloat("dispMapScale", dispMapScale);
+		addFloat("dispMapBias", -baseBias + baseBias * dispMapOffset);
 	}
 
-	public void setTexture(Texture texture) {
-		this.texture = texture;
+	public void addTexture(String name, Texture texture) {
+		textureHashMap.put(name, texture);
 	}
 
-	public Vector3f getColor() {
-		return color;
-	}
-
-	public void setColor(Vector3f color) {
-		this.color = color;
+	public Texture getTexture(String name) {
+		return textureHashMap.getOrDefault(name, new Texture("color.png"));
 	}
 }
