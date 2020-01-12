@@ -1,5 +1,8 @@
 package com.kuzu.game;
 
+import com.kuzu.engine.components.camera.PerspectiveCamera;
+import com.kuzu.engine.components.light.BaseLight;
+import com.kuzu.engine.components.light.DirectionalLight;
 import com.kuzu.engine.core.Input;
 import com.kuzu.engine.core.MainComponent;
 import com.kuzu.engine.core.MouseCode;
@@ -8,8 +11,7 @@ import com.kuzu.engine.event.MouseEvents;
 import com.kuzu.engine.event.WindowResizeEvent;
 import com.kuzu.engine.rendering.*;
 import com.kuzu.engine.rendering.buffer.BufferLayout;
-import com.kuzu.engine.rendering.camera.PerspectiveCamera;
-import com.kuzu.engine.rendering.shader.BasicShader;
+import com.kuzu.engine.rendering.shader.PhongShader;
 import com.kuzu.event.api.EventSubscriber;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -21,8 +23,7 @@ public class GameLayer extends Layer {
 	private static final float zFar = 1000f;
 
 	private Mesh mesh;
-	private BasicShader basicShader;
-	//	private PhongShader phongShader;
+	private PhongShader phongShader;
 	private PerspectiveCamera camera;
 	private Transform transform;
 	private Material material;
@@ -34,9 +35,8 @@ public class GameLayer extends Layer {
 		System.out.println(layout);
 
 		mesh = new Mesh("cube2.obj");
-		material = new Material(new Texture("uv.png"));
-		basicShader = new BasicShader();
-//		phongShader = PhongShader.getInstance();
+		material = new Material(new Texture("test.png"));
+		phongShader = new PhongShader();
 		transform = new Transform();
 		transform.setTranslation(0, 0, -5);
 
@@ -48,13 +48,11 @@ public class GameLayer extends Layer {
 		camera = new PerspectiveCamera(FOV, aspectRatio, zNear, zFar, camPos, rotation);
 		camera.setWindowCenter(new Vector2f(width / 2, height / 2));
 
-		basicShader.bind();
-		basicShader.setProjectionMatrix(camera.getProjection());
-		basicShader.unbind();
-
-//		phongShader.bind();
-//		phongShader.setUniformMat4("projectionMat", camera.getProjection());
-//		phongShader.unbind();
+		phongShader.bind();
+		phongShader.setProjectionMatrix(camera.getProjection());
+		phongShader.setAmbientLight(new Vector3f(0.1f, 0.1f, 0.1f));
+		phongShader.setDirectionalLight(new DirectionalLight(new BaseLight(new Vector3f(1, 0, 0), 0.8f), new Vector3f(1, 1, 1)));
+		phongShader.unbind();
 	}
 
 	@Override
@@ -74,30 +72,16 @@ public class GameLayer extends Layer {
 
 	public void update(float delta) {
 		temp += delta;
-//		transform.setRotation(0, temp %= 2*(float)Math.PI, 0);
-//		transform.getRotation().rotateX((float) Math.PI/2);
+		transform.setRotation(0, temp %= 2 * (float) Math.PI, 0);
 	}
 
 	@Override
 	public void render() {
-		basicShader.bind();
-		basicShader.updateUniforms(transform.getTransformation(), camera.getView());
-
+		phongShader.bind();
+		phongShader.updateUniforms(transform.getTransformation(), camera.getView());
 		material.getTexture("diffuse").bind();
 		mesh.draw();
-		basicShader.unbind();
-
-//		phongShader.bind();
-//		phongShader.setUniformMat4("transformMat", transform.getTransformation());
-//		phongShader.setUniformMat4("viewMat", camera.getView());
-//		phongShader.setUniformMat4("normalMat", camera.getView()
-//				.mul(transform.getTransformation(), new Matrix4f())
-//				.invert()
-//				.transpose()
-//		);
-//		material.getTexture().bind();
-//		mesh.drawNormals();
-//		phongShader.unbind();
+		phongShader.unbind();
 	}
 
 	@EventSubscriber
@@ -117,13 +101,9 @@ public class GameLayer extends Layer {
 		camera.setProjection(FOV, aspectRatio, zNear, zFar);
 		camera.setWindowCenter(new Vector2f(width / 2, height / 2));
 
-		basicShader.bind();
-		basicShader.setProjectionMatrix(camera.getProjection());
-		basicShader.unbind();
-
-//		phongShader.bind();
-//		phongShader.setUniformMat4("projectionMat", camera.getProjection());
-//		phongShader.unbind();
+		phongShader.bind();
+		phongShader.setProjectionMatrix(camera.getProjection());
+		phongShader.unbind();
 	}
 
 }

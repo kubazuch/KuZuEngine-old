@@ -1,4 +1,4 @@
-package com.kuzu.engine.rendering.camera;
+package com.kuzu.engine.components.camera;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;

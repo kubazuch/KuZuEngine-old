@@ -10,9 +10,9 @@ public class Transform {
 	private Vector3f scale;
 
 	public Transform() {
-		translation = new Vector3f(0, 0, 0);
-		rotation = new Quaternionf(0, 0, 0, 1);
-		scale = new Vector3f(1, 1, 1);
+		translation = new Vector3f();
+		rotation = new Quaternionf();
+		scale = new Vector3f(1);
 	}
 
 	public Matrix4f getTransformation() {

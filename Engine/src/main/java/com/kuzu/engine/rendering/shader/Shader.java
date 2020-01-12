@@ -295,7 +295,7 @@ public class Shader {
 		glUniform1i(resource.getUniforms().get(uniformName), value);
 	}
 
-	public void setUniformf(String uniformName, int value) {
+	public void setUniformf(String uniformName, float value) {
 		glUniform1f(resource.getUniforms().get(uniformName), value);
 	}
 

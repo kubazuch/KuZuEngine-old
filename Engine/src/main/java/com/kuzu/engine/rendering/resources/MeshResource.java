@@ -32,12 +32,6 @@ public class MeshResource {
 		vao.unbind();
 	}
 
-	public void drawNormals() {
-		vao.bind();
-		glDrawElements(GL_POINTS, size, GL_UNSIGNED_INT, 0);
-		vao.unbind();
-	}
-
 	@Override
 	protected void finalize() throws Throwable {
 		vao.cleanUp();

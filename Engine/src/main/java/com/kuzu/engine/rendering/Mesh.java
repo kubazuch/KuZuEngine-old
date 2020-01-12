@@ -62,10 +62,6 @@ public class Mesh {
 		resource.draw();
 	}
 
-	public void drawNormals() {
-		resource.drawNormals();
-	}
-
 	private void calcNormals(Vertex[] vertices, int[] indices) {
 		for (int i = 0; i < indices.length; i += 3) {
 			int i0 = indices[i];

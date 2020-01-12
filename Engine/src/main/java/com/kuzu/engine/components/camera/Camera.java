@@ -1,4 +1,4 @@
-package com.kuzu.engine.rendering.camera;
+package com.kuzu.engine.components.camera;
 
 import com.kuzu.engine.core.Input;
 import com.kuzu.engine.core.KeyCode;
