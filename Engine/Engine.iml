@@ -13,18 +13,18 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="EventHandlerApi" level="project" />
     <orderEntry type="library" name="slick-util3" level="project" />
+    <orderEntry type="library" name="org.joml:joml:1.9.20" level="project" />
     <orderEntry type="library" name="Maven: org.lwjgl:lwjgl:3.2.3" level="project" />
     <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-assimp:3.2.3" level="project" />
     <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-glfw:3.2.3" level="project" />
     <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-openal:3.2.3" level="project" />
     <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-opengl:3.2.3" level="project" />
     <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-stb:3.2.3" level="project" />
-    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl:natives-windows:3.2.3" level="project" />
-    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-assimp:natives-windows:3.2.3" level="project" />
-    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-glfw:natives-windows:3.2.3" level="project" />
-    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-openal:natives-windows:3.2.3" level="project" />
-    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-opengl:natives-windows:3.2.3" level="project" />
-    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-stb:natives-windows:3.2.3" level="project" />
-    <orderEntry type="library" name="org.joml:joml:1.9.20" level="project" />
+    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl:natives-windows-x86:3.2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-assimp:natives-windows-x86:3.2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-glfw:natives-windows-x86:3.2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-openal:natives-windows-x86:3.2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-opengl:natives-windows-x86:3.2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-stb:natives-windows-x86:3.2.3" level="project" />
   </component>
 </module>
