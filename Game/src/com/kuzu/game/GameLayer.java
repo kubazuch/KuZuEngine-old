@@ -58,8 +58,8 @@ public class GameLayer extends Layer {
 		phongShader.bind();
 		phongShader.setProjectionMatrix(camera.getProjection());
 		phongShader.setAmbientLight(new Vector3f(0.1f, 0.1f, 0.1f));
-		light1 = new DirectionalLight(new BaseLight(COLOR1, 0.3f), new Vector3f(0.71f, 0.71f, 1));
-		light2 = new DirectionalLight(new BaseLight(COLOR2, 0.3f), new Vector3f(-0.71f, 0.71f, 1));
+		light1 = new DirectionalLight(new BaseLight(COLOR1, 0.7f), new Vector3f(0.71f, 0.71f, 1));
+		light2 = new DirectionalLight(new BaseLight(COLOR2, 0.7f), new Vector3f(-0.71f, 0.71f, 1));
 		phongShader.setDirectionalLight("directionalLight1", light1);
 		phongShader.setDirectionalLight("directionalLight2", light2);
 		phongShader.unbind();
@@ -92,8 +92,8 @@ public class GameLayer extends Layer {
 		temp %= 2 * (float) Math.PI;
 		float a = (float) Math.sin(temp);
 		float b = (float) Math.cos(temp);
-		light1.setDirection(new Vector3f(b, -a, 1));
-		light1.setDirection(new Vector3f(b, a, 1));
+		light1.setDirection(new Vector3f(-b, 0, -a));
+		light1.setDirection(new Vector3f(b, 0, a));
 //		transform.setRotation(0, temp %= 2 * (float) Math.PI, 0);
 	}
 
