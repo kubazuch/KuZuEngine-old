@@ -44,4 +44,10 @@ public class LayerStack implements Iterable<Layer> {
 	public Iterator<Layer> iterator() {
 		return layers.iterator();
 	}
+
+	public void dispose() {
+		layers.forEach(Layer::dispose);
+		layerInsertIndex = 0;
+		layers.clear();
+	}
 }

@@ -5,6 +5,7 @@ import com.kuzu.engine.rendering.resources.MappedValues;
 import java.util.HashMap;
 
 public class Material extends MappedValues {
+	private static final Texture DEFAULT = new Texture("color.png");
 	private HashMap<String, Texture> textureHashMap;
 
 	public Material(Texture diffuse) {
@@ -33,6 +34,11 @@ public class Material extends MappedValues {
 	}
 
 	public Texture getTexture(String name) {
-		return textureHashMap.getOrDefault(name, new Texture("color.png"));
+		return textureHashMap.getOrDefault(name, DEFAULT);
+	}
+
+	public void dispose() {
+		textureHashMap.forEach((name, texture) -> texture.dispose());
+		textureHashMap.clear();
 	}
 }

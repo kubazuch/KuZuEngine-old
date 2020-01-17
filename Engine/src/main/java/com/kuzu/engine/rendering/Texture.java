@@ -37,7 +37,6 @@ public class Texture {
 			resource = loadTexture(fileName, textureTarget, filter, internalFormat, format, clamp);
 			loadedTextures.put(fileName, resource);
 		}
-
 	}
 
 	private static TextureResource loadTexture(String fileName, int textureTarget, int filter, int internalFormat, int format, boolean clamp) {
@@ -107,10 +106,12 @@ public class Texture {
 		return null;
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
-		if (resource.removeReference() && !fileName.isEmpty())
-			loadedTextures.remove(fileName);
+	public void dispose() {
+		if (resource.removeReference()) {
+			resource.dispose();
+			if (!fileName.isEmpty())
+				loadedTextures.remove(fileName);
+		}
 	}
 
 	public void bind() {

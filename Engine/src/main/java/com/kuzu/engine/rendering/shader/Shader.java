@@ -77,10 +77,11 @@ public class Shader {
 		return shaderSource.toString();
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
-		if (resource.removeReference() && !fileName.isEmpty()) {
-			loadedShaders.remove(fileName);
+	public void dispose() {
+		if (resource.removeReference()) {
+			resource.dispose();
+			if (!fileName.isEmpty())
+				loadedShaders.remove(fileName);
 		}
 	}
 

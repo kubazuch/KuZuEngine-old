@@ -19,7 +19,8 @@ struct DirectionalLight {
     vec3 direction;
 };
 
-uniform DirectionalLight directionalLight;
+uniform DirectionalLight directionalLight1;
+uniform DirectionalLight directionalLight2;
 
 vec4 calcLight(BaseLight base, vec3 direction, vec3 normal) {
     float diffuseFactor = dot(normal, -direction);
@@ -45,7 +46,8 @@ void main() {
 
     vec3 normal = normalize(normalOut);
 
-    totalLight += calcDirectionalLight(directionalLight, normal);
+    totalLight += calcDirectionalLight(directionalLight1, normal);
+    totalLight += calcDirectionalLight(directionalLight2, normal);
 
     fragColor = color * totalLight;
 }

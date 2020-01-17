@@ -20,15 +20,12 @@ public class VertexArray {
 		vao = glGenVertexArrays();
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
-		cleanUp();
-	}
 
-	public void cleanUp() {
+	public void dispose() {
 		glDeleteVertexArrays(vao);
-		vertexBuffers.forEach(VertexBuffer::cleanUp);
-		indexBuffer.cleanUp();
+		vertexBuffers.forEach(VertexBuffer::dispose);
+		vertexBuffers.clear();
+		indexBuffer.dispose();
 	}
 
 	public void bind() {

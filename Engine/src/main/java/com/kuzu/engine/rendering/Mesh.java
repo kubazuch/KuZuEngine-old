@@ -107,6 +107,14 @@ public class Mesh {
 		return this;
 	}
 
+	public void dispose() {
+		if (resource.removeReference()) {
+			resource.dispose();
+			if (!fileName.isEmpty())
+				loadedModels.remove(fileName);
+		}
+	}
+
 	private void saveImage() {
 		glReadBuffer(GL_FRONT);
 		int width = MainComponent.INSTANCE.getWidth();

@@ -140,6 +140,8 @@ public class MainComponent {
 
 	private void cleanUp() {
 		window.dispose();
+		windowEventBus.shutdown();
+		layerStack.dispose();
 	}
 
 	@EventSubscriber

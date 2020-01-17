@@ -32,9 +32,8 @@ public class MeshResource {
 		vao.unbind();
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
-		vao.cleanUp();
+	public void dispose() {
+		vao.dispose();
 	}
 
 	public void addReference() {

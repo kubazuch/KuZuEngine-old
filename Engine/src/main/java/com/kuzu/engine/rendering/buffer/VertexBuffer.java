@@ -15,12 +15,7 @@ public class VertexBuffer {
 		glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
-		cleanUp();
-	}
-
-	public void cleanUp() {
+	public void dispose() {
 		glDeleteBuffers(vbo);
 	}
 

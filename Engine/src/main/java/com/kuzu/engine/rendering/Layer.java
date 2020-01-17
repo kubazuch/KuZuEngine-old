@@ -19,6 +19,10 @@ public abstract class Layer {
 
 	}
 
+	public void dispose() {
+
+	}
+
 	public abstract void onUpdate(float delta);
 
 	public String getName() {

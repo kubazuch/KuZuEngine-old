@@ -1,5 +1,6 @@
 package com.kuzu.engine.rendering.resources;
 
+import static org.lwjgl.opengl.GL11.glDeleteTextures;
 import static org.lwjgl.opengl.GL11.glGenTextures;
 
 public class TextureResource {
@@ -9,6 +10,10 @@ public class TextureResource {
 	public TextureResource() {
 		this.id = glGenTextures();
 		this.refCount = 1;
+	}
+
+	public void dispose() {
+		glDeleteTextures(id);
 	}
 
 	public void addReference() {

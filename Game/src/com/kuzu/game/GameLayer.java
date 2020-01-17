@@ -21,6 +21,8 @@ public class GameLayer extends Layer {
 	private static final float FOV = (float) Math.toRadians(70f);
 	private static final float zNear = 0.1f;
 	private static final float zFar = 1000f;
+	public static final Vector3f COLOR1 = new Vector3f(1f, 0, 1f);
+	public static final Vector3f COLOR2 = new Vector3f(0f, 1f, 1f);
 
 	private Mesh mesh;
 	private PhongShader phongShader;
@@ -28,14 +30,19 @@ public class GameLayer extends Layer {
 	private Transform transform;
 	private Material material;
 
+	private DirectionalLight light1;
+	private DirectionalLight light2;
+
 	private float temp = 0f;
 
 	public GameLayer() {
 		BufferLayout layout = Vertex.LAYOUT;
 		System.out.println(layout);
 
-		mesh = new Mesh("cube2.obj");
-		material = new Material(new Texture("test.png"));
+		if (new Texture("color.png").equals("")) System.out.println("k");
+
+		mesh = new Mesh("susan.obj");
+		material = new Material(new Texture("uv.png"));
 		phongShader = new PhongShader();
 		transform = new Transform();
 		transform.setTranslation(0, 0, -5);
@@ -51,7 +58,10 @@ public class GameLayer extends Layer {
 		phongShader.bind();
 		phongShader.setProjectionMatrix(camera.getProjection());
 		phongShader.setAmbientLight(new Vector3f(0.1f, 0.1f, 0.1f));
-		phongShader.setDirectionalLight(new DirectionalLight(new BaseLight(new Vector3f(1, 0, 0), 0.8f), new Vector3f(1, 1, 1)));
+		light1 = new DirectionalLight(new BaseLight(COLOR1, 0.3f), new Vector3f(0.71f, 0.71f, 1));
+		light2 = new DirectionalLight(new BaseLight(COLOR2, 0.3f), new Vector3f(-0.71f, 0.71f, 1));
+		phongShader.setDirectionalLight("directionalLight1", light1);
+		phongShader.setDirectionalLight("directionalLight2", light2);
 		phongShader.unbind();
 	}
 
@@ -66,19 +76,33 @@ public class GameLayer extends Layer {
 		update(delta);
 	}
 
+	@Override
+	public void dispose() {
+		mesh.dispose();
+		phongShader.dispose();
+		material.dispose();
+	}
+
 	public void input(float delta) {
 		camera.input(delta);
 	}
 
 	public void update(float delta) {
 		temp += delta;
-		transform.setRotation(0, temp %= 2 * (float) Math.PI, 0);
+		temp %= 2 * (float) Math.PI;
+		float a = (float) Math.sin(temp);
+		float b = (float) Math.cos(temp);
+		light1.setDirection(new Vector3f(b, -a, 1));
+		light1.setDirection(new Vector3f(b, a, 1));
+//		transform.setRotation(0, temp %= 2 * (float) Math.PI, 0);
 	}
 
 	@Override
 	public void render() {
 		phongShader.bind();
 		phongShader.updateUniforms(transform.getTransformation(), camera.getView());
+		phongShader.setDirectionalLight("directionalLight1", light1);
+		phongShader.setDirectionalLight("directionalLight2", light2);
 		material.getTexture("diffuse").bind();
 		mesh.draw();
 		phongShader.unbind();

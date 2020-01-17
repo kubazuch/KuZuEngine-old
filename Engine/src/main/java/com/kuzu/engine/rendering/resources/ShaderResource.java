@@ -26,8 +26,7 @@ public class ShaderResource {
 		uniformTypes = new ArrayList<>();
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
+	public void dispose() {
 		glDeleteProgram(program);
 	}
 

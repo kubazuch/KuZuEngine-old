@@ -16,8 +16,6 @@ public class PerspectiveCamera extends Camera {
 	}
 
 	public void setProjection(float fov, float aspect, float zNear, float zFar) {
-		System.out.println(projectionMatrix);
 		this.projectionMatrix.setPerspective(fov, aspect, zNear, zFar);
-		System.out.println(projectionMatrix);
 	}
 }

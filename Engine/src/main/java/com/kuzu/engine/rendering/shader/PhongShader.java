@@ -24,9 +24,9 @@ public class PhongShader extends Shader {
 		setUniform("ambientLight", ambientLight);
 	}
 
-	public void setDirectionalLight(DirectionalLight light) {
-		setUniform("directionalLight.base.color", light.getBase().getColor());
-		setUniformf("directionalLight.base.intensity", light.getBase().getIntensity());
-		setUniform("directionalLight.direction", light.getDirection());
+	public void setDirectionalLight(String name, DirectionalLight light) {
+		setUniform(name + ".base.color", light.getBase().getColor());
+		setUniformf(name + ".base.intensity", light.getBase().getIntensity());
+		setUniform(name + ".direction", light.getDirection());
 	}
 }
