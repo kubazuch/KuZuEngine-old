@@ -11,6 +11,8 @@ public class ShaderResource {
 	private HashMap<String, Integer> uniforms;
 	private ArrayList<String> uniformNames;
 	private ArrayList<String> uniformTypes;
+	private HashMap<String, Integer> integerConsts;
+	private HashMap<String, Float> floatConsts;
 	private int refCount;
 
 	public ShaderResource() {
@@ -22,6 +24,8 @@ public class ShaderResource {
 		}
 
 		uniforms = new HashMap<>();
+		integerConsts = new HashMap<>();
+		floatConsts = new HashMap<>();
 		uniformNames = new ArrayList<>();
 		uniformTypes = new ArrayList<>();
 	}
@@ -45,6 +49,14 @@ public class ShaderResource {
 
 	public HashMap<String, Integer> getUniforms() {
 		return uniforms;
+	}
+
+	public HashMap<String, Integer> getIntegerConsts() {
+		return integerConsts;
+	}
+
+	public HashMap<String, Float> getFloatConsts() {
+		return floatConsts;
 	}
 
 	public ArrayList<String> getUniformNames() {

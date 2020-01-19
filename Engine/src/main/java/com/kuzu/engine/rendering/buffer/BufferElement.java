@@ -43,4 +43,14 @@ public class BufferElement {
 	public int getType() {
 		return type.getGLType();
 	}
+
+	@Override
+	public String toString() {
+		return "BufferElement{" +
+				"name='" + name + '\'' +
+				", type=" + type +
+				", normalized=" + normalized +
+				", offset=" + offset +
+				'}';
+	}
 }

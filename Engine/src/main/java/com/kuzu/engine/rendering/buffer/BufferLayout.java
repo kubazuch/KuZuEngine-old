@@ -27,4 +27,12 @@ public class BufferLayout {
 	public List<BufferElement> getElements() {
 		return elements;
 	}
+
+	@Override
+	public String toString() {
+		return "BufferLayout{" +
+				"elements=" + elements +
+				", stride=" + stride +
+				'}';
+	}
 }

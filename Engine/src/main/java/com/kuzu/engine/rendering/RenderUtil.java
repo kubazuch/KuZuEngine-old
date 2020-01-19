@@ -2,7 +2,7 @@ package com.kuzu.engine.rendering;
 
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_SRGB;
+import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
 
 public class RenderUtil {
 
@@ -25,8 +25,9 @@ public class RenderUtil {
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 
+		glEnable(GL_DEPTH_CLAMP);
+
 		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_FRAMEBUFFER_SRGB);
 	}
 
 	public static String getOpenGLVersion() {
