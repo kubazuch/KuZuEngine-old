@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 
@@ -94,8 +94,8 @@ public class Texture {
 					filter == GL_LINEAR_MIPMAP_LINEAR) {
 				//TODO: MIPMAP
 			} else {
-//				glTexParameteri(textureTarget, GL_TEXTURE_BASE_LEVEL, 0);
-//				glTexParameteri(textureTarget, GL_TEXTURE_MAX_LEVEL, 0);
+				glTexParameteri(textureTarget, GL_TEXTURE_BASE_LEVEL, 0);
+				glTexParameteri(textureTarget, GL_TEXTURE_MAX_LEVEL, 0);
 			}
 
 			return resource;
@@ -104,6 +104,12 @@ public class Texture {
 		}
 
 		return null;
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		if (resource.removeReference() && !fileName.isEmpty())
+			loadedTextures.remove(fileName);
 	}
 
 	public void dispose() {

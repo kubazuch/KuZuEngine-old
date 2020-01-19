@@ -1,6 +1,7 @@
 #version 150
 
 const int MAX_POINT_LIGHTS = 4;
+const int MAX_SPOT_LIGHTS = 4;
 
 in vec2 texCoordOut;
 in vec3 normalOut;
@@ -28,6 +29,13 @@ struct PointLight {
     BaseLight base;
     Attenuation atten;
     vec3 pos;
+    float range;
+};
+
+struct SpotLight {
+    PointLight pointLight;
+    vec3 direction;
+    float cutoff;
 };
 
 uniform vec3 baseColor;
@@ -41,6 +49,7 @@ uniform float specularPower;
 
 uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
+uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 vec4 calcLight(BaseLight base, vec3 direction, vec3 normal) {
     float diffuseFactor = dot(normal, -direction);
@@ -71,6 +80,10 @@ vec4 calcDirectionalLight(DirectionalLight directionalLight, vec3 normal) {
 vec4 calcPointLight(PointLight pointLight, vec3 normal) {
     vec3 lightDirection = worldPosOut - pointLight.pos;
     float distanceToPoint = length(lightDirection);
+
+    if (distanceToPoint > pointLight.range)
+    return vec4(0, 0, 0, 0);
+
     lightDirection = normalize(lightDirection);
 
     vec4 color = calcLight(pointLight.base, lightDirection, normal);
@@ -81,6 +94,19 @@ vec4 calcPointLight(PointLight pointLight, vec3 normal) {
     0.00001;
 
     return color / attenuation;
+}
+
+vec4 calcSpotLight(SpotLight spotLight, vec3 normal) {
+    vec3 ligthDirection = normalize(worldPosOut - spotLight.pointLight.pos);
+    float spotFactor = dot(ligthDirection, spotLight.direction);
+
+    vec4 color = vec4(0, 0, 0, 0);
+    if (spotFactor > spotLight.cutoff) {
+        color = calcPointLight(spotLight.pointLight, normal) *
+        (1.0 - (1.0 - spotFactor)/(1.0 - spotLight.cutoff));
+    }
+
+    return color;
 }
 
 void main() {
@@ -95,8 +121,15 @@ void main() {
 
     totalLight += calcDirectionalLight(directionalLight, normal);
 
-    for (int i = 0; i < MAX_POINT_LIGHTS; i++)
-    totalLight += calcPointLight(pointLights[i], normal);
+    for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+        if (pointLights[i].base.intensity > 0)
+        totalLight += calcPointLight(pointLights[i], normal);
+    }
+
+    for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
+        if (spotLights[i].pointLight.base.intensity > 0)
+        totalLight += calcSpotLight(spotLights[i], normal);
+    }
 
     fragColor = color * totalLight;
 }
