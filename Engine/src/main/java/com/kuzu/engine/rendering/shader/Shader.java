@@ -1,6 +1,8 @@
 package com.kuzu.engine.rendering.shader;
 
+import com.kuzu.engine.components.camera.Camera;
 import com.kuzu.engine.core.Util;
+import com.kuzu.engine.rendering.Material;
 import com.kuzu.engine.rendering.resources.ShaderResource;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -110,6 +112,9 @@ public class Shader {
 
 	public void bind() {
 		glUseProgram(resource.getProgram());
+	}
+
+	public void updateUniforms(Matrix4f transformMat, Camera camera, Material material) {
 	}
 
 	private void addAllAttributes(String shaderText) {

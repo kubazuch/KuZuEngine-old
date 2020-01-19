@@ -1,14 +1,18 @@
 package com.kuzu.game;
 
-import com.kuzu.engine.core.MainComponent;
+import com.kuzu.engine.core.CoreEngine;
 
 import java.io.IOException;
 
 public class Main {
+	public static final int WIDTH = 800;
+	public static final int HEIGHT = 600;
+	public static final double FRAMERATE = 500;
+	public static final String TITLE = "3D Game Engine";
+
 	public static void main(String[] args) throws IOException {
-		MainComponent game = MainComponent.INSTANCE;
+		CoreEngine game = new CoreEngine(WIDTH, HEIGHT, FRAMERATE, TITLE);
 		game.pushLayer(new GameLayer());
-//		game.pushOverlay(new GameLayer("Overlay",1.0f, 0.15f));
 		game.start();
 	}
 }

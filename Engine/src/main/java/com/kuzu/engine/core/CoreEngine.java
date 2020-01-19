@@ -13,10 +13,7 @@ import java.util.ListIterator;
 
 import static org.lwjgl.opengl.GL11.glViewport;
 
-public class MainComponent {
-	public static final double FRAME_CAP = 5000.0;
-	public static MainComponent INSTANCE = new MainComponent();
-
+public class CoreEngine {
 	private boolean minimized = false;
 
 	private boolean isRunning;
@@ -29,16 +26,21 @@ public class MainComponent {
 
 	private LayerStack layerStack = new LayerStack();
 
-	public MainComponent() {
-		isRunning = false;
-		window = new Window();
-		windowEventBus = new EventBus();
-		window.setEventCallback(windowEventBus::post);
-		Input.setWindow(window.getWindowHandle());
+	public CoreEngine(int width, int height, double framerate, String title) {
+		this.isRunning = false;
+		this.width = width;
+		this.height = height;
+		this.frameTime = 1.0 / framerate;
+
+		this.window = new Window(width, height, title);
+		this.windowEventBus = new EventBus();
+		this.window.setEventCallback(windowEventBus::post);
+		Input.setWindow(this.window.getWindowHandle());
+
 		RenderUtil.initGraphics();
 
-		windowEventBus.register(this);
-		windowEventBus.register(Input.class);
+		this.windowEventBus.register(this);
+		this.windowEventBus.register(Input.class);
 	}
 
 	public void pushLayer(Layer layer) {
@@ -81,8 +83,6 @@ public class MainComponent {
 
 		int frames = 0;
 		double frameCounter = 0;
-
-		final double frameTime = 1.0 / FRAME_CAP;
 
 		double lastTime = Time.getTime();
 		double unprocessedTime = 0;
@@ -170,9 +170,4 @@ public class MainComponent {
 	public int getHeight() {
 		return this.window.getHeight();
 	}
-
-//	@EventSubscriber
-//	public void onEvent(Event e){
-//		System.out.println(e);
-//	}
 }

@@ -1,5 +1,7 @@
 package com.kuzu.engine.rendering.shader;
 
+import com.kuzu.engine.components.camera.Camera;
+import com.kuzu.engine.rendering.Material;
 import org.joml.Matrix4f;
 
 public class BasicShader extends Shader {
@@ -11,8 +13,8 @@ public class BasicShader extends Shader {
 		setUniform("projectionMat", projectionMatrix);
 	}
 
-	public void updateUniforms(Matrix4f transformMat, Matrix4f viewMat) {
+	public void updateUniforms(Matrix4f transformMat, Camera camera, Material material) {
 		setUniform("transformMat", transformMat);
-		setUniform("viewMat", viewMat);
+		setUniform("viewMat", camera.getView());
 	}
 }
