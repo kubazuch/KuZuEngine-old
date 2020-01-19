@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.lwjgl.opengl.GL11.GL_FALSE;
@@ -17,11 +19,18 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
 public class Shader {
+	private static final Pattern INCLUDE_PATTERN = Pattern.compile("^\\s*#include \"(\\S+?\\.\\S{1,3})\"", Pattern.MULTILINE);
+	private static final Pattern ATTRIB_PATTERN = Pattern.compile("^\\s*attribute (\\S+) (\\S+);", Pattern.MULTILINE);
+	private static final Pattern ARRAY_CONST_PATTERN = Pattern.compile("^\\s*const (\\S+) (\\S+) = (\\S*);", Pattern.MULTILINE);
+	private static final Pattern UNIFORM_PATTERN = Pattern.compile("^\\s*uniform (\\S+) (\\S+);", Pattern.MULTILINE);
+	private static final Pattern STRUCT_PATTERN = Pattern.compile("^\\s*struct (\\S+?) \\{\\s*((?:\\s*.*? .*?;)+)\\s*};", Pattern.MULTILINE);
+	private static final Pattern STRUCT_ELEMENT_PATTERN = Pattern.compile("^\\s*([^/\\s]+?) (\\S+?);", Pattern.MULTILINE);
+	private static final Pattern ARRAY_PATTERN = Pattern.compile("\\[(\\S+?)]");
+
 	private static HashMap<String, ShaderResource> loadedShaders = new HashMap<>();
 
-	private ShaderResource resource;
+	protected ShaderResource resource;
 	private String fileName;
-
 
 	public Shader(String fileName, boolean geometry) {
 		this.fileName = fileName;
@@ -36,15 +45,18 @@ public class Shader {
 			String vertexShaderText = loadShader(fileName + ".vs");
 			addVertexShader(vertexShaderText);
 			addAllAttributes(vertexShaderText);
+			findConsts(vertexShaderText);
 
 			if (geometry) {
 				String geometryText = loadShader(fileName + ".gs");
 				addGeometryShader(geometryText);
 				addAllUniforms(geometryText);
+				findConsts(geometryText);
 			}
 
 			String fragmentShaderText = loadShader(fileName + ".fs");
 			addFragmentShader(fragmentShaderText);
+			findConsts(fragmentShaderText);
 
 			linkShader();
 
@@ -56,7 +68,7 @@ public class Shader {
 	}
 
 	private static String loadShader(String fileName) {
-		final String INCLUDE_DIRECTIVE = "#include";
+
 		StringBuilder shaderSource = new StringBuilder();
 
 		try {
@@ -64,10 +76,11 @@ public class Shader {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			Stream<String> lines = reader.lines();
 			lines.forEachOrdered(line -> {
-				if (line.startsWith(INCLUDE_DIRECTIVE))
-					shaderSource.append(loadShader(line.substring(INCLUDE_DIRECTIVE.length() + 2, line.length() - 1)));
+				Matcher m = INCLUDE_PATTERN.matcher(line);
+				if (m.matches())
+					shaderSource.append(loadShader(m.group(1))).append('\n');
 				else
-					shaderSource.append(line).append("\n");
+					shaderSource.append(line).append('\n');
 			});
 		} catch (NullPointerException e) {
 			e.printStackTrace();
@@ -94,129 +107,104 @@ public class Shader {
 	}
 
 	private void addAllAttributes(String shaderText) {
-		final String ATTRIBUTE_KEYWORD = "attribute";
-		int attributeStartLocation = shaderText.indexOf(ATTRIBUTE_KEYWORD);
+		Matcher m = ATTRIB_PATTERN.matcher(shaderText);
+
 		int attribNumber = 0;
-
-		while (attributeStartLocation != -1) {
-			if (!(attributeStartLocation != 0 &&
-					(Character.isWhitespace(shaderText.charAt(attributeStartLocation - 1)) || shaderText.charAt(attributeStartLocation - 1) == ';') &&
-					Character.isWhitespace(shaderText.charAt(attributeStartLocation + ATTRIBUTE_KEYWORD.length())))) {
-				attributeStartLocation = shaderText.indexOf(ATTRIBUTE_KEYWORD, attributeStartLocation + ATTRIBUTE_KEYWORD.length());
-				continue;
-			}
-
-			int begin = attributeStartLocation + ATTRIBUTE_KEYWORD.length() + 1;
-			int end = shaderText.indexOf(";", begin);
-
-			String attributeLine = shaderText.substring(begin, end).trim();
-			String attributeName = attributeLine.substring(attributeLine.indexOf(' ') + 1).trim();
-
-			setAttribLocation(attributeName, attribNumber);
-			attribNumber++;
-
-			attributeStartLocation = shaderText.indexOf(ATTRIBUTE_KEYWORD, attributeStartLocation + ATTRIBUTE_KEYWORD.length());
+		while (m.find()) {
+			String attributeName = m.group(2);
+			setAttribLocation(attributeName, attribNumber++);
 		}
 	}
 
 	private HashMap<String, ArrayList<GLSLStruct>> findUniformStructs(String shaderText) {
 		HashMap<String, ArrayList<GLSLStruct>> result = new HashMap<>();
 
-		final String STRUCT_KEYWORD = "struct";
-		int structStartLocation = shaderText.indexOf(STRUCT_KEYWORD);
-		while (structStartLocation != -1) {
-			if (!(structStartLocation != 0 &&
-					(Character.isWhitespace(shaderText.charAt(structStartLocation - 1)) || shaderText.charAt(structStartLocation - 1) == ';') &&
-					Character.isWhitespace(shaderText.charAt(structStartLocation + STRUCT_KEYWORD.length())))) {
-				structStartLocation = shaderText.indexOf(STRUCT_KEYWORD, structStartLocation + STRUCT_KEYWORD.length());
-				continue;
-			}
+		Matcher structMatcher = STRUCT_PATTERN.matcher(shaderText);
+		while (structMatcher.find()) {
+			String structName = structMatcher.group(1);
+			String structComponents = structMatcher.group(2);
 
-			int nameBegin = structStartLocation + STRUCT_KEYWORD.length() + 1;
-			int braceBegin = shaderText.indexOf("{", nameBegin);
-			int braceEnd = shaderText.indexOf("}", braceBegin);
-
-			String structName = shaderText.substring(nameBegin, braceBegin).trim();
 			ArrayList<GLSLStruct> glslStructs = new ArrayList<>();
-
-			int componentSemicolonPos = shaderText.indexOf(";", braceBegin);
-			while (componentSemicolonPos != -1 && componentSemicolonPos < braceEnd) {
-				int componentNameEnd = componentSemicolonPos + 1;
-				while (Character.isWhitespace(shaderText.charAt(componentNameEnd - 1)) || shaderText.charAt(componentNameEnd - 1) == ';')
-					componentNameEnd--;
-
-				int componentNameStart = componentSemicolonPos;
-				while (!Character.isWhitespace(shaderText.charAt(componentNameStart - 1)))
-					componentNameStart--;
-
-				int componentTypeEnd = componentNameStart;
-
-				while (Character.isWhitespace(shaderText.charAt(componentTypeEnd - 1)))
-					componentTypeEnd--;
-
-				int componentTypeStart = componentTypeEnd;
-
-				while (!Character.isWhitespace(shaderText.charAt(componentTypeStart - 1)))
-					componentTypeStart--;
-
-				String componentName = shaderText.substring(componentNameStart, componentNameEnd);
-				String componentType = shaderText.substring(componentTypeStart, componentTypeEnd);
-
-				GLSLStruct glslStruct = new GLSLStruct();
-				glslStruct.name = componentName;
-				glslStruct.type = componentType;
-
-				glslStructs.add(glslStruct);
-
-				componentSemicolonPos = shaderText.indexOf(";", componentSemicolonPos + 1);
+			Matcher componentMatcher = STRUCT_ELEMENT_PATTERN.matcher(structComponents);
+			while (componentMatcher.find()) {
+				String componentType = componentMatcher.group(1);
+				String componentName = componentMatcher.group(2);
+				GLSLStruct struct = new GLSLStruct(componentName, componentType);
+				glslStructs.add(struct);
 			}
 
 			result.put(structName, glslStructs);
-
-			structStartLocation = shaderText.indexOf(STRUCT_KEYWORD, structStartLocation + STRUCT_KEYWORD.length());
 		}
 
 		return result;
 	}
 
+	private void findConsts(String shaderText) {
+		Matcher m = ARRAY_CONST_PATTERN.matcher(shaderText);
+		while (m.find()) {
+			String constType = m.group(1);
+			String constName = m.group(2);
+			if (constType.equals("int")) {
+				int constValue = Integer.parseInt(m.group(3));
+				resource.getIntegerConsts().put(constName, constValue);
+			} else if (constType.equals("float")) {
+				float constValue = Float.parseFloat(m.group(3));
+				resource.getFloatConsts().put(constName, constValue);
+			}
+		}
+	}
+
 	private void addAllUniforms(String shaderText) {
 		HashMap<String, ArrayList<GLSLStruct>> structs = findUniformStructs(shaderText);
-
-		final String UNIFORM_KEYWORD = "uniform";
-		int uniformStartLocation = shaderText.indexOf(UNIFORM_KEYWORD);
-		while (uniformStartLocation != -1) {
-			if (!(uniformStartLocation != 0
-					&& (Character.isWhitespace(shaderText.charAt(uniformStartLocation - 1)) || shaderText.charAt(uniformStartLocation - 1) == ';')
-					&& Character.isWhitespace(shaderText.charAt(uniformStartLocation + UNIFORM_KEYWORD.length())))) {
-				uniformStartLocation = shaderText.indexOf(UNIFORM_KEYWORD, uniformStartLocation + UNIFORM_KEYWORD.length());
-				continue;
-			}
-
-			int begin = uniformStartLocation + UNIFORM_KEYWORD.length() + 1;
-			int end = shaderText.indexOf(";", begin);
-
-			String uniformLine = shaderText.substring(begin, end).trim();
-
-			int whiteSpacePos = uniformLine.indexOf(' ');
-			String uniformName = uniformLine.substring(whiteSpacePos + 1).trim();
-			String uniformType = uniformLine.substring(0, whiteSpacePos).trim();
+		Matcher uniformMatcher = UNIFORM_PATTERN.matcher(shaderText);
+		while (uniformMatcher.find()) {
+			String uniformType = uniformMatcher.group(1);
+			String uniformName = uniformMatcher.group(2);
 
 			resource.getUniformNames().add(uniformName);
 			resource.getUniformTypes().add(uniformType);
-			addUniform(uniformName, uniformType, structs);
 
-			uniformStartLocation = shaderText.indexOf(UNIFORM_KEYWORD, uniformStartLocation + UNIFORM_KEYWORD.length());
+			Matcher m = ARRAY_PATTERN.matcher(uniformName);
+			if (m.find()) {
+				String countString = m.group(1);
+				int count;
+				try {
+					count = Integer.parseInt(countString);
+				} catch (NumberFormatException e) {
+					count = resource.getIntegerConsts().get(countString);
+				}
+
+				for (int i = 0; i < count; i++) {
+					addUniform(m.replaceFirst('[' + String.valueOf(i) + ']'), uniformType, structs);
+				}
+			} else {
+				addUniform(uniformName, uniformType, structs);
+			}
 		}
 	}
 
 	private void addUniform(String uniformName, String uniformType, HashMap<String, ArrayList<GLSLStruct>> structs) {
 		boolean addThis = true;
 		ArrayList<GLSLStruct> structComponents = structs.get(uniformType);
-
 		if (structComponents != null) {
 			addThis = false;
 			for (GLSLStruct struct : structComponents) {
-				addUniform(uniformName + "." + struct.name, struct.type, structs);
+				Matcher m = ARRAY_PATTERN.matcher(struct.name);
+				if (m.find()) {
+					String countString = m.group(1);
+					int count;
+					try {
+						count = Integer.parseInt(countString);
+					} catch (NumberFormatException e) {
+						count = resource.getIntegerConsts().get(countString);
+					}
+
+					for (int i = 0; i < count; i++) {
+						addUniform(uniformName + "." + m.replaceFirst('[' + String.valueOf(i) + ']'), struct.type, structs);
+					}
+				} else {
+					addUniform(uniformName + "." + struct.name, struct.type, structs);
+				}
 			}
 		}
 
@@ -311,5 +299,10 @@ public class Shader {
 	private class GLSLStruct {
 		public String name;
 		public String type;
+
+		public GLSLStruct(String name, String type) {
+			this.name = name;
+			this.type = type;
+		}
 	}
 }
