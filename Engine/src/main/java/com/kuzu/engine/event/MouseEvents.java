@@ -1,5 +1,6 @@
 package com.kuzu.engine.event;
 
+import com.kuzu.engine.core.Input;
 import com.kuzu.engine.core.MouseCode;
 import com.kuzu.event.api.Event;
 
@@ -9,10 +10,12 @@ public class MouseEvents {
 	public static class MouseMovedEvent extends Event {
 		private float mouseX;
 		private float mouseY;
+		private Input input;
 
-		public MouseMovedEvent(float mouseX, float mouseY) {
+		public MouseMovedEvent(float mouseX, float mouseY, Input input) {
 			this.mouseX = mouseX;
 			this.mouseY = mouseY;
+			this.input = input;
 		}
 
 		public float getX() {
@@ -21,6 +24,10 @@ public class MouseEvents {
 
 		public float getY() {
 			return mouseY;
+		}
+
+		public Input getInput() {
+			return input;
 		}
 
 		@Override
@@ -32,10 +39,12 @@ public class MouseEvents {
 	public static class MouseScrolledEvent extends Event {
 		private float xOffset;
 		private float yOffset;
+		private Input input;
 
-		public MouseScrolledEvent(float xOffset, float yOffset) {
+		public MouseScrolledEvent(float xOffset, float yOffset, Input input) {
 			this.xOffset = xOffset;
 			this.yOffset = yOffset;
+			this.input = input;
 		}
 
 		public float getxOffset() {
@@ -46,6 +55,10 @@ public class MouseEvents {
 			return yOffset;
 		}
 
+		public Input getInput() {
+			return input;
+		}
+
 		@Override
 		public String toString() {
 			return "MouseScrolledEvent: " + xOffset + ", " + yOffset;
@@ -54,19 +67,25 @@ public class MouseEvents {
 
 	public static class MouseButtonEvent extends Event {
 		protected MouseCode button;
+		protected Input input;
 
-		public MouseButtonEvent(int button) {
+		public MouseButtonEvent(int button, Input input) {
 			this.button = Arrays.stream(MouseCode.values()).filter(x -> x.ordinal() == button).findAny().orElse(null);
+			this.input = input;
 		}
 
 		public MouseCode getMouseButton() {
 			return button;
 		}
+
+		public Input getInput() {
+			return input;
+		}
 	}
 
 	public static class MouseButtonPressedEvent extends MouseButtonEvent {
-		public MouseButtonPressedEvent(int button) {
-			super(button);
+		public MouseButtonPressedEvent(int button, Input input) {
+			super(button, input);
 		}
 
 		@Override
@@ -76,8 +95,8 @@ public class MouseEvents {
 	}
 
 	public static class MouseButtonReleasedEvent extends MouseButtonEvent {
-		public MouseButtonReleasedEvent(int button) {
-			super(button);
+		public MouseButtonReleasedEvent(int button, Input input) {
+			super(button, input);
 		}
 
 		@Override

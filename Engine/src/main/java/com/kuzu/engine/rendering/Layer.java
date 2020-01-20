@@ -1,5 +1,8 @@
 package com.kuzu.engine.rendering;
 
+import com.kuzu.engine.core.CoreEngine;
+import com.kuzu.engine.core.Input;
+
 public abstract class Layer {
 	protected String debugName;
 
@@ -11,7 +14,7 @@ public abstract class Layer {
 		this.debugName = debugName;
 	}
 
-	public void onAttach() {
+	public void onAttach(CoreEngine engine) {
 
 	}
 
@@ -23,12 +26,12 @@ public abstract class Layer {
 
 	}
 
-	public abstract void onUpdate(float delta);
+	public abstract void onUpdate(float delta, Input input);
 
 	public String getName() {
 		return debugName;
 	}
 
-	public abstract void render();
+	public abstract void render(RenderingEngine engine);
 
 }

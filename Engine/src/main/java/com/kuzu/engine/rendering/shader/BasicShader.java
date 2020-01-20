@@ -14,6 +14,7 @@ public class BasicShader extends Shader {
 	}
 
 	public void updateUniforms(Matrix4f transformMat, Camera camera, Material material) {
+		material.getTexture("diffuse").bind(0);
 		setUniform("transformMat", transformMat);
 		setUniform("viewMat", camera.getView());
 	}

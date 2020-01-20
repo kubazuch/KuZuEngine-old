@@ -1,5 +1,6 @@
 package com.kuzu.engine.core;
 
+import com.kuzu.engine.rendering.Window;
 import org.joml.Vector2f;
 import org.lwjglx.BufferUtils;
 
@@ -8,34 +9,34 @@ import java.nio.DoubleBuffer;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Input {
-	private static long window;
+	private Window window;
 
-	static void setWindow(long window) {
-		Input.window = window;
+	public Input(Window window) {
+		this.window = window;
 	}
 
-	public static boolean isKeyPressed(KeyCode key) {
-		int state = glfwGetKey(window, key.getCode());
+	public boolean isKeyPressed(KeyCode key) {
+		int state = glfwGetKey(window.getWindowHandle(), key.getCode());
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
-	public static boolean isMouseButtonPressed(MouseCode button) {
-		int state = glfwGetMouseButton(window, button.ordinal());
+	public boolean isMouseButtonPressed(MouseCode button) {
+		int state = glfwGetMouseButton(window.getWindowHandle(), button.ordinal());
 		return state == GLFW_PRESS;
 	}
 
-	public static Vector2f getMousePosition() {
+	public Vector2f getMousePosition() {
 		DoubleBuffer x = BufferUtils.createDoubleBuffer(1);
 		DoubleBuffer y = BufferUtils.createDoubleBuffer(1);
-		glfwGetCursorPos(window, x, y);
+		glfwGetCursorPos(window.getWindowHandle(), x, y);
 		return new Vector2f((float) x.get(), (float) y.get());
 	}
 
-	public static void setMousePosition(Vector2f pos) {
-		glfwSetCursorPos(window, pos.x, pos.y);
+	public void setMousePosition(Vector2f pos) {
+		glfwSetCursorPos(window.getWindowHandle(), pos.x, pos.y);
 	}
 
-	public static void setCursor(boolean enabled) {
-		glfwSetInputMode(window, GLFW_CURSOR, enabled ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+	public void setCursor(boolean enabled) {
+		glfwSetInputMode(window.getWindowHandle(), GLFW_CURSOR, enabled ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
 }

@@ -117,6 +117,9 @@ public class Shader {
 	public void updateUniforms(Matrix4f transformMat, Camera camera, Material material) {
 	}
 
+	public void setProjectionMatrix(Matrix4f projectionMatrix) {
+	}
+
 	private void addAllAttributes(String shaderText) {
 		Matcher m = ATTRIB_PATTERN.matcher(shaderText);
 
@@ -197,6 +200,7 @@ public class Shader {
 	private void addUniform(String uniformName, String uniformType, HashMap<String, ArrayList<GLSLStruct>> structs) {
 		boolean addThis = true;
 		ArrayList<GLSLStruct> structComponents = structs.get(uniformType);
+		System.out.println(uniformName);
 		if (structComponents != null) {
 			addThis = false;
 			for (GLSLStruct struct : structComponents) {

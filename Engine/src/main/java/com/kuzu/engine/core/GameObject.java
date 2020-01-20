@@ -2,7 +2,11 @@ package com.kuzu.engine.core;
 
 import com.kuzu.engine.components.GameComponent;
 import com.kuzu.engine.components.camera.Camera;
+import com.kuzu.engine.rendering.RenderingEngine;
 import com.kuzu.engine.rendering.shader.Shader;
+import com.kuzu.event.EventBus;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 
@@ -13,16 +17,27 @@ public class GameObject {
 	private CoreEngine engine;
 
 	public GameObject() {
+		this(new Vector3f(), new Quaternionf(), new Vector3f(1));
+	}
+
+	public GameObject(Vector3f pos) {
+		this(pos, new Quaternionf(), new Vector3f(1));
+	}
+
+	public GameObject(Vector3f pos, Quaternionf rot) {
+		this(pos, rot, new Vector3f(1));
+	}
+
+	public GameObject(Vector3f pos, Quaternionf rot, Vector3f scale) {
 		children = new ArrayList<>();
 		components = new ArrayList<>();
-		transform = new Transform();
-		engine = null;
+		transform = new Transform(pos, rot, scale);
 	}
 
 	public GameObject addChild(GameObject child) {
 		children.add(child);
 		child.setEngine(engine);
-//		child.getTransform().setParent(transform);
+		child.getTransform().setParent(transform);
 
 		return this;
 	}
@@ -34,11 +49,11 @@ public class GameObject {
 		return this;
 	}
 
-	public void inputAll(float delta) {
-		input(delta);
+	public void inputAll(float delta, Input input) {
+		input(delta, input);
 
 		for (GameObject child : children)
-			child.inputAll(delta);
+			child.inputAll(delta, input);
 	}
 
 	public void updateAll(float delta) {
@@ -48,26 +63,26 @@ public class GameObject {
 			child.updateAll(delta);
 	}
 
-	public void renderAll(Shader shader, Camera camera) {
-		render(shader, camera);
+	public void renderAll(Shader shader, RenderingEngine engine, Camera camera) {
+		render(shader, engine, camera);
 
 		for (GameObject child : children)
-			child.renderAll(shader, camera);
+			child.renderAll(shader, engine, camera);
 	}
 
-	public void input(float delta) {
+	private void input(float delta, Input input) {
 		for (GameComponent component : components)
-			component.input(delta);
+			component.input(delta, input);
 	}
 
-	public void update(float delta) {
+	private void update(float delta) {
 		for (GameComponent component : components)
 			component.update(delta);
 	}
 
-	public void render(Shader shader, Camera camera) {
+	private void render(Shader shader, RenderingEngine engine, Camera camera) {
 		for (GameComponent component : components)
-			component.render(shader, camera);
+			component.render(shader, engine, camera);
 	}
 
 	public ArrayList<GameObject> getAllAttached() {
@@ -78,6 +93,16 @@ public class GameObject {
 
 		result.add(this);
 		return result;
+	}
+
+	public GameObject registerToEventBus(EventBus bus) {
+		for (GameObject child : children)
+			child.registerToEventBus(bus);
+
+		bus.register(this);
+		components.forEach(bus::register);
+
+		return this;
 	}
 
 	public Transform getTransform() {

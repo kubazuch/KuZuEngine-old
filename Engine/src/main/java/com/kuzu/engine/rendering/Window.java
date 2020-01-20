@@ -1,5 +1,6 @@
 package com.kuzu.engine.rendering;
 
+import com.kuzu.engine.core.Input;
 import com.kuzu.engine.event.KeyEvents.KeyPressedEvent;
 import com.kuzu.engine.event.KeyEvents.KeyReleasedEvent;
 import com.kuzu.engine.event.KeyEvents.KeyTypedEvent;
@@ -24,6 +25,7 @@ public class Window {
 
 	private long window;
 	private WindowData data = new WindowData();
+	private Input input;
 
 	private GLFWErrorCallback errorCallback;
 	private GLFWWindowSizeCallback windowSizeCallback;
@@ -39,13 +41,14 @@ public class Window {
 	}
 
 	public Window(int width, int height, String title) {
+		this.data.width = width;
+		this.data.height = height;
+		this.data.title = title;
+		this.input = new Input(this);
 		init(width, height, title);
 	}
 
 	private void init(int width, int height, String title) {
-		this.data.width = width;
-		this.data.height = height;
-		this.data.title = title;
 		System.out.println("Creating window " + data.title + " (" + data.width + ", " + data.height + ")");
 		if (GLFWWindowCount == 0) {
 			boolean success = glfwInit();
@@ -96,17 +99,17 @@ public class Window {
 
 				switch (action) {
 					case GLFW_PRESS: {
-						KeyPressedEvent event = new KeyPressedEvent(key, 0);
+						KeyPressedEvent event = new KeyPressedEvent(key, 0, input);
 						data.eventCallbackFn.apply(event);
 						break;
 					}
 					case GLFW_RELEASE: {
-						KeyReleasedEvent event = new KeyReleasedEvent(key);
+						KeyReleasedEvent event = new KeyReleasedEvent(key, input);
 						data.eventCallbackFn.apply(event);
 						break;
 					}
 					case GLFW_REPEAT: {
-						KeyPressedEvent event = new KeyPressedEvent(key, 1);
+						KeyPressedEvent event = new KeyPressedEvent(key, 1, input);
 						data.eventCallbackFn.apply(event);
 						break;
 					}
@@ -119,7 +122,7 @@ public class Window {
 			public void invoke(long window, int codepoint) {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 
-				KeyTypedEvent event = new KeyTypedEvent(codepoint);
+				KeyTypedEvent event = new KeyTypedEvent(codepoint, input);
 				data.eventCallbackFn.apply(event);
 			}
 		}));
@@ -130,12 +133,12 @@ public class Window {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 				switch (action) {
 					case GLFW_PRESS: {
-						MouseButtonPressedEvent event = new MouseButtonPressedEvent(button);
+						MouseButtonPressedEvent event = new MouseButtonPressedEvent(button, input);
 						data.eventCallbackFn.apply(event);
 						break;
 					}
 					case GLFW_RELEASE: {
-						MouseButtonReleasedEvent event = new MouseButtonReleasedEvent(button);
+						MouseButtonReleasedEvent event = new MouseButtonReleasedEvent(button, input);
 						data.eventCallbackFn.apply(event);
 						break;
 					}
@@ -148,7 +151,7 @@ public class Window {
 			public void invoke(long window, double xoffset, double yoffset) {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 
-				MouseScrolledEvent event = new MouseScrolledEvent((float) xoffset, (float) yoffset);
+				MouseScrolledEvent event = new MouseScrolledEvent((float) xoffset, (float) yoffset, input);
 				data.eventCallbackFn.apply(event);
 			}
 		}));
@@ -158,7 +161,7 @@ public class Window {
 			public void invoke(long window, double xpos, double ypos) {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 
-				MouseMovedEvent event = new MouseMovedEvent((float) xpos, (float) ypos);
+				MouseMovedEvent event = new MouseMovedEvent((float) xpos, (float) ypos, input);
 				data.eventCallbackFn.apply(event);
 			}
 		}));
@@ -206,6 +209,10 @@ public class Window {
 
 	public long getWindowHandle() {
 		return window;
+	}
+
+	public Input getInput() {
+		return input;
 	}
 
 	public static class WindowData {

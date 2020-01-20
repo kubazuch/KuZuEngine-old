@@ -4,9 +4,10 @@ import com.kuzu.engine.event.WindowCloseEvent;
 import com.kuzu.engine.event.WindowResizeEvent;
 import com.kuzu.engine.rendering.Layer;
 import com.kuzu.engine.rendering.LayerStack;
-import com.kuzu.engine.rendering.RenderUtil;
+import com.kuzu.engine.rendering.RenderingEngine;
 import com.kuzu.engine.rendering.Window;
 import com.kuzu.event.EventBus;
+import com.kuzu.event.api.EventPriority;
 import com.kuzu.event.api.EventSubscriber;
 
 import java.util.ListIterator;
@@ -17,10 +18,11 @@ public class CoreEngine {
 	private boolean minimized = false;
 
 	private boolean isRunning;
-//	private RenderingEngine renderingEngine;
+	private RenderingEngine renderingEngine;
 	private int width;
 	private int height;
 	private Window window;
+	private Input input;
 	private EventBus windowEventBus;
 	private double frameTime;
 
@@ -35,12 +37,11 @@ public class CoreEngine {
 		this.window = new Window(width, height, title);
 		this.windowEventBus = new EventBus();
 		this.window.setEventCallback(windowEventBus::post);
-		Input.setWindow(this.window.getWindowHandle());
 
-		RenderUtil.initGraphics();
+		this.renderingEngine = new RenderingEngine(window);
 
 		this.windowEventBus.register(this);
-		this.windowEventBus.register(Input.class);
+		this.windowEventBus.register(renderingEngine);
 	}
 
 	public void pushLayer(Layer layer) {
@@ -48,7 +49,7 @@ public class CoreEngine {
 			windowEventBus.unregister(l);
 
 		layerStack.pushLayer(layer);
-		layer.onAttach();
+		layer.onAttach(this);
 
 		ListIterator<Layer> reverse = layerStack.reverseIterator();
 		while (reverse.hasPrevious())
@@ -60,7 +61,7 @@ public class CoreEngine {
 			windowEventBus.unregister(l);
 
 		layerStack.pushOverlay(overlay);
-		overlay.onAttach();
+		overlay.onAttach(this);
 
 		ListIterator<Layer> reverse = layerStack.reverseIterator();
 		while (reverse.hasPrevious())
@@ -103,7 +104,7 @@ public class CoreEngine {
 				unprocessedTime -= frameTime;
 				if (!minimized) {
 					for (Layer layer : layerStack)
-						layer.onUpdate((float) frameTime);
+						layer.onUpdate((float) frameTime, window.getInput());
 				}
 
 				if (frameCounter >= 1.0) {
@@ -129,10 +130,8 @@ public class CoreEngine {
 	}
 
 	private void render() {
-		RenderUtil.clearScreen();
-
 		for (Layer layer : layerStack) {
-			layer.render();
+			layer.render(renderingEngine);
 		}
 
 		window.render();
@@ -144,12 +143,20 @@ public class CoreEngine {
 		layerStack.dispose();
 	}
 
+	public RenderingEngine getRenderingEngine() {
+		return renderingEngine;
+	}
+
+	public EventBus getWindowEventBus() {
+		return windowEventBus;
+	}
+
 	@EventSubscriber
 	public void onWindowCloseEvent(WindowCloseEvent ignored) {
 		stop();
 	}
 
-	@EventSubscriber
+	@EventSubscriber(priority = EventPriority.LOW)
 	public void onWindowResizeEvent(WindowResizeEvent event) {
 		glViewport(0, 0, event.getWidth(), event.getHeight());
 
@@ -160,7 +167,7 @@ public class CoreEngine {
 
 		minimized = false;
 
-		//TODO: Renderer on resize
+		renderingEngine.onWindowResize();
 	}
 
 	public int getWidth() {

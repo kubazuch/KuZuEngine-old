@@ -1,16 +1,16 @@
 package com.kuzu.game;
 
 import com.kuzu.engine.components.MeshRenderer;
+import com.kuzu.engine.components.camera.CameraComponent;
 import com.kuzu.engine.components.camera.PerspectiveCamera;
+import com.kuzu.engine.core.CoreEngine;
 import com.kuzu.engine.core.GameObject;
 import com.kuzu.engine.core.Input;
-import com.kuzu.engine.core.MouseCode;
-import com.kuzu.engine.core.Transform;
 import com.kuzu.engine.event.MouseEvents;
-import com.kuzu.engine.event.WindowResizeEvent;
+import com.kuzu.engine.math.MathUtils;
 import com.kuzu.engine.rendering.*;
-import com.kuzu.engine.rendering.buffer.BufferLayout;
 import com.kuzu.engine.rendering.shader.BasicShader;
+import com.kuzu.event.EventBus;
 import com.kuzu.event.api.EventSubscriber;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -25,9 +25,13 @@ public class GameLayer extends Layer {
 	public static final Vector3f COLOR3 = new Vector3f(1f, 1f, 0f);
 
 	//	private PhongShader phongShader;
+	private EventBus gameEventBus;
 	private BasicShader basicShader;
-	private PerspectiveCamera camera;
+
 	private GameObject root;
+	private GameObject monkey;
+	private GameObject plane;
+	private GameObject camera;
 
 //	private DirectionalLight directionalLight;
 //	private PointLight light1;
@@ -37,28 +41,33 @@ public class GameLayer extends Layer {
 	private float temp = 0f;
 
 	public GameLayer() {
-		BufferLayout layout = Vertex.LAYOUT;
+		gameEventBus = new EventBus();
+
 //		phongShader = new PhongShader();
 		basicShader = new BasicShader();
-		Transform transform = new Transform();
-		transform.setTranslation(0, 0, 0);
+
+		root = new GameObject();
+
+		MeshRenderer susanRenderer = new MeshRenderer(new Mesh("susan.obj"), new Material(new Texture("uv.png")));
+		monkey = new GameObject(new Vector3f(0, 2, 0)).addComponent(susanRenderer);
+
+		MeshRenderer planeRenderer = new MeshRenderer(new Mesh("plane.obj"), new Material(new Texture("color.png")));
+		plane = new GameObject().addComponent(planeRenderer);
+		plane.getTransform().setScale(new Vector3f(10f));
 
 		float width = Main.WIDTH;
 		float height = Main.HEIGHT;
 		float aspectRatio = width / height;
-		Vector3f camPos = new Vector3f(0, 0, 5);
-		Quaternionf rotation = new Quaternionf().lookAlong(transform.getTranslation().sub(camPos, new Vector3f()), new Vector3f(0, 1, 0));
-		camera = new PerspectiveCamera(FOV, aspectRatio, zNear, zFar, camPos, rotation);
-		camera.setWindowCenter(new Vector2f(width / 2, height / 2));
-
-		Mesh mesh = new Mesh("susan.obj");
-		Material material = new Material(new Texture("uv.png"));
-		MeshRenderer renderer = new MeshRenderer(mesh, material);
-		root = new GameObject();
-		root.addComponent(renderer);
+		PerspectiveCamera perspectiveCamera = new PerspectiveCamera(FOV, aspectRatio, zNear, zFar);
+		CameraComponent cameraComponent = new CameraComponent(perspectiveCamera);
+		cameraComponent.setWindowCenter(new Vector2f(width / 2, height / 2));
+		camera = new GameObject().addComponent(cameraComponent);
+		camera.getTransform().setPos(new Vector3f(0, 10, 5));
+		camera.getTransform().lookAt(monkey.getTransform().getPos(), MathUtils.UP);
+		root.addChild(monkey).addChild(plane).addChild(camera);
 
 		basicShader.bind();
-		basicShader.setProjectionMatrix(camera.getProjection());
+		basicShader.setProjectionMatrix(perspectiveCamera.getProjection());
 //		phongShader.setAmbientLight(new Vector3f(0.1f, 0.1f, 0.1f));
 //		directionalLight = new DirectionalLight(
 //				new BaseLight(new Vector3f(1, 1, 1), 0.1f),
@@ -92,13 +101,16 @@ public class GameLayer extends Layer {
 	}
 
 	@Override
-	public void onAttach() {
-		System.out.println(RenderUtil.getOpenGLVersion());
+	public void onAttach(CoreEngine engine) {
+		root.setEngine(engine);
+		root.registerToEventBus(engine.getWindowEventBus());
+		root.registerToEventBus(gameEventBus);
+		System.out.println(RenderingEngine.getOpenGLVersion());
 	}
 
 	@Override
-	public void onUpdate(float delta) {
-		input(delta);
+	public void onUpdate(float delta, Input input) {
+		input(input, delta);
 		update(delta);
 	}
 
@@ -107,14 +119,13 @@ public class GameLayer extends Layer {
 		basicShader.dispose();
 	}
 
-	public void input(float delta) {
-		camera.input(delta);
-		root.input(delta);
+	public void input(Input input, float delta) {
+		root.inputAll(delta, input);
 	}
 
 	public void update(float delta) {
 		temp += delta;
-		root.update(delta);
+		root.updateAll(delta);
 //		temp %= 2 * (float) Math.PI;
 //		float a = (float) Math.sin(temp);
 //		float b = (float) Math.cos(temp);
@@ -122,34 +133,17 @@ public class GameLayer extends Layer {
 //		light2.setPosition(new Vector3f(2*a, 0, 2*b));
 //		spotLight.getPointLight().setPosition(camera.getPosition());
 //		spotLight.setDirection(camera.getForward());
-		root.getTransform().setRotation(0, temp %= 2 * (float) Math.PI, 0);
+		monkey.getTransform().setRot(new Quaternionf().rotateXYZ(0, temp %= 2 * (float) Math.PI, 0));
 	}
 
 	@Override
-	public void render() {
-		root.render(basicShader, camera);
+	public void render(RenderingEngine engine) {
+		engine.render(root);
 	}
 
 	@EventSubscriber
 	public void onMouseDown(MouseEvents.MouseButtonPressedEvent e) {
 		System.out.println("Button: " + e.getMouseButton());
-		System.out.println(Input.getMousePosition());
-		if (e.getMouseButton() == MouseCode.BUTTON_LEFT) {
-			camera.onLMBDown();
-		}
+		System.out.println(e.getInput().getMousePosition());
 	}
-
-	@EventSubscriber
-	public void onWindowResizeEvent(WindowResizeEvent event) {
-		float width = event.getWidth();
-		float height = event.getHeight();
-		float aspectRatio = width / height;
-		camera.setProjection(FOV, aspectRatio, zNear, zFar);
-		camera.setWindowCenter(new Vector2f(width / 2, height / 2));
-
-		basicShader.bind();
-		basicShader.setProjectionMatrix(camera.getProjection());
-		basicShader.unbind();
-	}
-
 }
