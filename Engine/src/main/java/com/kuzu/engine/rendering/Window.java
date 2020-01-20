@@ -184,6 +184,10 @@ public class Window {
 		return this.data.title;
 	}
 
+	public void setTitle(String title) {
+		glfwSetWindowTitle(window, title);
+	}
+
 	public boolean isVSync() {
 		return this.data.vSync;
 	}

@@ -9,6 +9,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameObject {
 	private ArrayList<GameObject> children;
@@ -42,9 +43,28 @@ public class GameObject {
 		return this;
 	}
 
+	public GameObject addChildren(GameObject... children) {
+		Arrays.stream(children).forEach(child -> {
+			this.children.add(child);
+			child.setEngine(engine);
+			child.getTransform().setParent(transform);
+		});
+
+		return this;
+	}
+
 	public GameObject addComponent(GameComponent component) {
 		components.add(component);
 		component.setParent(this);
+
+		return this;
+	}
+
+	public GameObject addComponents(GameComponent... components) {
+		Arrays.stream(components).forEach(component -> {
+			this.components.add(component);
+			component.setParent(this);
+		});
 
 		return this;
 	}

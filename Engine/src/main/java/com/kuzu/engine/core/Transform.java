@@ -68,7 +68,7 @@ public class Transform {
 	}
 
 	public Matrix4f getTransformation() {
-		return new Matrix4f(parentMatrix).translate(pos).rotate(rot).scale(scale);
+		return new Matrix4f(getParentMatrix()).translate(pos).rotate(rot).scale(scale);
 	}
 
 	public Matrix4f getParentMatrix() {
@@ -83,7 +83,7 @@ public class Transform {
 	}
 
 	public Vector3f getTransformedPos() {
-		return pos.mulPosition(parentMatrix, new Vector3f());
+		return pos.mulPosition(getParentMatrix(), new Vector3f());
 	}
 
 	public Quaternionf getTransformedRot() {

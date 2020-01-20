@@ -1,42 +1,29 @@
 package com.kuzu.engine.components.light;
 
+import com.kuzu.engine.math.MathUtils;
+import com.kuzu.engine.rendering.shader.ForwardPointShader;
 import org.joml.Vector3f;
 
-public class PointLight {
-	private BaseLight baseLight;
+public class PointLight extends BaseLight {
+	private static final int COLOR_DEPTH = 256;
+
 	private Attenuation atten;
-	private Vector3f position;
 	private float range;
 
-	public PointLight(BaseLight baseLight, Attenuation atten, Vector3f position, float range) {
-		this.baseLight = baseLight;
+	public PointLight(Vector3f color, float intensity, Attenuation atten) {
+		super(color, intensity);
 		this.atten = atten;
-		this.position = position;
-		this.range = range;
-	}
 
-	public BaseLight getBaseLight() {
-		return baseLight;
-	}
+		float a = atten.getExponent();
+		float b = atten.getLinear();
+		float c = atten.getConstant() - COLOR_DEPTH * getIntensity() * MathUtils.max(getColor());
 
-	public void setBaseLight(BaseLight baseLight) {
-		this.baseLight = baseLight;
+		this.range = (float) ((-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a));
+		setShader(new ForwardPointShader());
 	}
 
 	public Attenuation getAtten() {
 		return atten;
-	}
-
-	public void setAtten(Attenuation atten) {
-		this.atten = atten;
-	}
-
-	public Vector3f getPosition() {
-		return position;
-	}
-
-	public void setPosition(Vector3f position) {
-		this.position = position;
 	}
 
 	public float getRange() {

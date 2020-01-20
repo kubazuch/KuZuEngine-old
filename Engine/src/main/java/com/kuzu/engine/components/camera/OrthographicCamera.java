@@ -6,7 +6,12 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class OrthographicCamera extends Camera {
-	private float zoomLevel;
+	private float zoomLevel = 1f;
+
+	public OrthographicCamera(float aspectRatio, float zoomLevel) {
+		this(-aspectRatio * zoomLevel, aspectRatio * zoomLevel, -zoomLevel, zoomLevel);
+		this.zoomLevel = zoomLevel;
+	}
 
 	public OrthographicCamera(float left, float right, float bottom, float top) {
 		super(new Matrix4f().ortho(left, right, bottom, top, 0.1f, 1000f), new Transform());

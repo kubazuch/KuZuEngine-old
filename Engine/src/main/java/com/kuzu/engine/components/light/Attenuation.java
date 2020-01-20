@@ -1,37 +1,25 @@
 package com.kuzu.engine.components.light;
 
-public class Attenuation {
-	private float constant;
-	private float linear;
-	private float exponent;
+import org.joml.Vector3f;
 
+public class Attenuation extends Vector3f {
 	public Attenuation(float constant, float linear, float exponent) {
-		this.constant = constant;
-		this.linear = linear;
-		this.exponent = exponent;
+		super(constant, linear, exponent);
+	}
+
+	public Attenuation() {
+		super();
 	}
 
 	public float getConstant() {
-		return constant;
-	}
-
-	public void setConstant(float constant) {
-		this.constant = constant;
+		return x;
 	}
 
 	public float getLinear() {
-		return linear;
-	}
-
-	public void setLinear(float linear) {
-		this.linear = linear;
+		return y;
 	}
 
 	public float getExponent() {
-		return exponent;
-	}
-
-	public void setExponent(float exponent) {
-		this.exponent = exponent;
+		return z;
 	}
 }

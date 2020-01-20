@@ -1,29 +1,18 @@
 package com.kuzu.engine.components.light;
 
+import com.kuzu.engine.math.MathUtils;
+import com.kuzu.engine.rendering.shader.ForwardDirectionalShader;
 import org.joml.Vector3f;
 
-public class DirectionalLight {
-	private BaseLight base;
+public class DirectionalLight extends BaseLight {
 	private Vector3f direction;
 
-	public DirectionalLight(BaseLight base, Vector3f direction) {
-		this.base = base;
-		this.direction = direction.normalize();
-	}
-
-	public BaseLight getBase() {
-		return base;
-	}
-
-	public void setBase(BaseLight base) {
-		this.base = base;
+	public DirectionalLight(Vector3f color, float intensity) {
+		super(color, intensity);
+		setShader(new ForwardDirectionalShader());
 	}
 
 	public Vector3f getDirection() {
-		return direction;
-	}
-
-	public void setDirection(Vector3f direction) {
-		this.direction = direction;
+		return MathUtils.getForward(getTransform().getTransformedRot());
 	}
 }

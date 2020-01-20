@@ -59,4 +59,8 @@ public class MathUtils {
 	public static Vector3f getLeft(Quaternionf rot) {
 		return rot.positiveX(new Vector3f()).negate();
 	}
+
+	public static float max(Vector3f in) {
+		return Math.max(in.x, Math.max(in.y, in.z));
+	}
 }

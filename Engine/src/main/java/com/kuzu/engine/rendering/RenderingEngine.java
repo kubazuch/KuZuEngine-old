@@ -4,7 +4,7 @@ import com.kuzu.engine.components.camera.Camera;
 import com.kuzu.engine.components.light.BaseLight;
 import com.kuzu.engine.core.GameObject;
 import com.kuzu.engine.rendering.resources.MappedValues;
-import com.kuzu.engine.rendering.shader.BasicShader;
+import com.kuzu.engine.rendering.shader.ForwardAmbientShader;
 import com.kuzu.engine.rendering.shader.Shader;
 import org.joml.Vector3f;
 
@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
 
 public class RenderingEngine extends MappedValues {
 	private final Window window;
@@ -21,8 +20,11 @@ public class RenderingEngine extends MappedValues {
 	private ArrayList<BaseLight> lights;
 	private BaseLight activeLight;
 
-	private Shader shader;
+	private Shader forwardAmbient;
 	private Camera mainCamera;
+
+	//TODO: temp
+	private Vector3f ambientLight;
 
 	public RenderingEngine(Window window) {
 		super();
@@ -37,7 +39,7 @@ public class RenderingEngine extends MappedValues {
 
 		addVector3f("ambient", new Vector3f(0.1f, 0.1f, 0.1f));
 
-		shader = new BasicShader();
+		forwardAmbient = new ForwardAmbientShader();
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
@@ -46,9 +48,15 @@ public class RenderingEngine extends MappedValues {
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 
-		glEnable(GL_DEPTH_CLAMP);
+//		glEnable(GL_DEPTH_CLAMP);
 
 		glEnable(GL_TEXTURE_2D);
+
+		ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);
+	}
+
+	public Vector3f getAmbientLight() {
+		return ambientLight;
 	}
 
 	public static String getOpenGLVersion() {
@@ -56,25 +64,25 @@ public class RenderingEngine extends MappedValues {
 	}
 
 	public void render(GameObject object) {
+		if (mainCamera == null) System.err.println("Main camera not found.");
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (mainCamera == null) System.err.println("Main camera not found.");
-		object.renderAll(shader, this, mainCamera);
+		object.renderAll(forwardAmbient, this, mainCamera);
 
-//		glEnable(GL_BLEND);
-//		glBlendFunc(GL_ONE, GL_ONE);
-//		glDepthMask(false);
-//		glDepthFunc(GL_EQUAL);
-//
-//		for(BaseLight light : lights) {
-//			activeLight = light;
-//			object.renderAll(light.getShader(), this);
-//		}
-//
-//		glDepthFunc(GL_LESS);
-//		glDepthMask(true);
-//		glDisable(GL_BLEND);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE, GL_ONE);
+		glDepthMask(false);
+		glDepthFunc(GL_EQUAL);
+
+		for (BaseLight light : lights) {
+			activeLight = light;
+			object.renderAll(light.getShader(), this, mainCamera);
+		}
+
+		glDepthFunc(GL_LESS);
+		glDepthMask(true);
+		glDisable(GL_BLEND);
 	}
 
 	public void addLight(BaseLight light) {
@@ -95,11 +103,5 @@ public class RenderingEngine extends MappedValues {
 
 	public void setMainCamera(Camera mainCamera) {
 		this.mainCamera = mainCamera;
-	}
-
-	public void onWindowResize() {
-		shader.bind();
-		shader.setProjectionMatrix(mainCamera.getProjection());
-		shader.unbind();
 	}
 }

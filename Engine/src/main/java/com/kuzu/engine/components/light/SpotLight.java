@@ -1,32 +1,20 @@
 package com.kuzu.engine.components.light;
 
+import com.kuzu.engine.math.MathUtils;
+import com.kuzu.engine.rendering.shader.ForwardSpotShader;
 import org.joml.Vector3f;
 
-public class SpotLight {
-	private PointLight pointLight;
-	private Vector3f direction;
+public class SpotLight extends PointLight {
 	private float cutoff;
 
-	public SpotLight(PointLight pointLight, Vector3f direction, float cutoff) {
-		this.pointLight = pointLight;
-		this.direction = direction.normalize(new Vector3f());
+	public SpotLight(Vector3f color, float intensity, Attenuation atten, float cutoff) {
+		super(color, intensity, atten);
 		this.cutoff = cutoff;
-	}
-
-	public PointLight getPointLight() {
-		return pointLight;
-	}
-
-	public void setPointLight(PointLight pointLight) {
-		this.pointLight = pointLight;
+		setShader(new ForwardSpotShader());
 	}
 
 	public Vector3f getDirection() {
-		return direction;
-	}
-
-	public void setDirection(Vector3f direction) {
-		this.direction = direction.normalize(new Vector3f());
+		return MathUtils.getForward(getTransform().getTransformedRot());
 	}
 
 	public float getCutoff() {

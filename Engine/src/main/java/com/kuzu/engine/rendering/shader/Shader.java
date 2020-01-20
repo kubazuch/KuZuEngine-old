@@ -1,8 +1,10 @@
 package com.kuzu.engine.rendering.shader;
 
 import com.kuzu.engine.components.camera.Camera;
+import com.kuzu.engine.core.Transform;
 import com.kuzu.engine.core.Util;
 import com.kuzu.engine.rendering.Material;
+import com.kuzu.engine.rendering.RenderingEngine;
 import com.kuzu.engine.rendering.resources.ShaderResource;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -20,7 +22,7 @@ import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
-public class Shader {
+public abstract class Shader {
 	private static final Pattern INCLUDE_PATTERN = Pattern.compile("^\\s*#include \"(\\S+?\\.\\S{1,3})\"", Pattern.MULTILINE);
 	private static final Pattern ATTRIB_PATTERN = Pattern.compile("^\\s*attribute (\\S+) (\\S+);", Pattern.MULTILINE);
 	private static final Pattern ARRAY_CONST_PATTERN = Pattern.compile("^\\s*const (\\S+) (\\S+) = (\\S*);", Pattern.MULTILINE);
@@ -114,11 +116,7 @@ public class Shader {
 		glUseProgram(resource.getProgram());
 	}
 
-	public void updateUniforms(Matrix4f transformMat, Camera camera, Material material) {
-	}
-
-	public void setProjectionMatrix(Matrix4f projectionMatrix) {
-	}
+	public abstract void updateUniforms(Transform transform, Material material, RenderingEngine engine, Camera camera);
 
 	private void addAllAttributes(String shaderText) {
 		Matcher m = ATTRIB_PATTERN.matcher(shaderText);

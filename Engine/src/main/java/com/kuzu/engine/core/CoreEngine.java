@@ -21,6 +21,7 @@ public class CoreEngine {
 	private RenderingEngine renderingEngine;
 	private int width;
 	private int height;
+	private String title;
 	private Window window;
 	private Input input;
 	private EventBus windowEventBus;
@@ -32,6 +33,7 @@ public class CoreEngine {
 		this.isRunning = false;
 		this.width = width;
 		this.height = height;
+		this.title = title;
 		this.frameTime = 1.0 / framerate;
 
 		this.window = new Window(width, height, title);
@@ -108,7 +110,8 @@ public class CoreEngine {
 				}
 
 				if (frameCounter >= 1.0) {
-					System.out.println(minimized + " " + frames);
+					window.setTitle(title + " | " + frames + "FPS");
+					System.out.println(frames + "FPS");
 					frames = 0;
 					frameCounter = 0;
 				}
@@ -166,8 +169,6 @@ public class CoreEngine {
 		}
 
 		minimized = false;
-
-		renderingEngine.onWindowResize();
 	}
 
 	public int getWidth() {
