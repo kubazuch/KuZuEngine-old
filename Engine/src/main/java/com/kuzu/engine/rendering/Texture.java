@@ -1,6 +1,7 @@
 package com.kuzu.engine.rendering;
 
 import com.kuzu.engine.core.Util;
+import com.kuzu.engine.math.MathUtils;
 import com.kuzu.engine.rendering.resources.TextureResource;
 
 import javax.imageio.ImageIO;
@@ -9,10 +10,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
+import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class Texture {
 
@@ -93,6 +97,9 @@ public class Texture {
 					filter == GL_LINEAR_MIPMAP_NEAREST ||
 					filter == GL_LINEAR_MIPMAP_LINEAR) {
 				//TODO: MIPMAP
+				glGenerateMipmap(textureTarget);
+				float maxAnisotropy = glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+				glTexParameterf(textureTarget, GL_TEXTURE_MAX_ANISOTROPY_EXT, MathUtils.clamp(0f, 8f, maxAnisotropy));
 			} else {
 				glTexParameteri(textureTarget, GL_TEXTURE_BASE_LEVEL, 0);
 				glTexParameteri(textureTarget, GL_TEXTURE_MAX_LEVEL, 0);

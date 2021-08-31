@@ -2,12 +2,11 @@ package com.kuzu.engine.event;
 
 import com.kuzu.engine.core.Input;
 import com.kuzu.engine.core.MouseCode;
-import com.kuzu.event.api.Event;
 
 import java.util.Arrays;
 
 public class MouseEvents {
-	public static class MouseMovedEvent extends Event {
+	public static class MouseMovedEvent {
 		private float mouseX;
 		private float mouseY;
 		private Input input;
@@ -36,7 +35,7 @@ public class MouseEvents {
 		}
 	}
 
-	public static class MouseScrolledEvent extends Event {
+	public static class MouseScrolledEvent {
 		private float xOffset;
 		private float yOffset;
 		private Input input;
@@ -65,7 +64,7 @@ public class MouseEvents {
 		}
 	}
 
-	public static class MouseButtonEvent extends Event {
+	public static class MouseButtonEvent {
 		protected MouseCode button;
 		protected Input input;
 

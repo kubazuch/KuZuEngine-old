@@ -12,8 +12,8 @@ public class Material extends MappedValues {
 		super();
 		textureHashMap = new HashMap<>();
 		addTexture("diffuse", diffuse);
-		addFloat("specularIntensity", 2);
-		addFloat("specularPower", 32);
+		addFloat("specularIntensity", 20);
+		addFloat("specularPower", 320);
 	}
 
 	public Material(Texture diffuse, float specularIntensity, float specularPower, Texture normal,

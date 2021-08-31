@@ -2,9 +2,10 @@ package com.kuzu.engine.core;
 
 import com.kuzu.engine.components.GameComponent;
 import com.kuzu.engine.components.camera.Camera;
+import com.kuzu.engine.event.EventUtil;
 import com.kuzu.engine.rendering.RenderingEngine;
 import com.kuzu.engine.rendering.shader.Shader;
-import com.kuzu.event.EventBus;
+import org.greenrobot.eventbus.EventBus;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -14,8 +15,8 @@ import java.util.Arrays;
 public class GameObject {
 	private ArrayList<GameObject> children;
 	private ArrayList<GameComponent> components;
-	private Transform transform;
-	private CoreEngine engine;
+	protected Transform transform;
+	protected CoreEngine engine;
 
 	public GameObject() {
 		this(new Vector3f(), new Quaternionf(), new Vector3f(1));
@@ -70,6 +71,7 @@ public class GameObject {
 	}
 
 	public void inputAll(float delta, Input input) {
+		transform.update();
 		input(delta, input);
 
 		for (GameObject child : children)
@@ -116,17 +118,34 @@ public class GameObject {
 	}
 
 	public GameObject registerToEventBus(EventBus bus) {
+
 		for (GameObject child : children)
 			child.registerToEventBus(bus);
 
-		bus.register(this);
-		components.forEach(bus::register);
+		EventUtil.register(bus, this);
+		components.forEach(cmp -> EventUtil.register(bus, cmp));
 
 		return this;
 	}
 
 	public Transform getTransform() {
 		return transform;
+	}
+
+	public Vector3f getPos() {
+		return transform.getPos();
+	}
+
+	public Quaternionf getRot() {
+		return transform.getRot();
+	}
+
+	public Vector3f getTransformedPos() {
+		return transform.getTransformedPos();
+	}
+
+	public Quaternionf getTransformedRot() {
+		return transform.getTransformedRot();
 	}
 
 	public void setEngine(CoreEngine engine) {

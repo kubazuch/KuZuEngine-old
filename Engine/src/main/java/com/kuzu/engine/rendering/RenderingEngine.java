@@ -16,6 +16,8 @@ import static org.lwjgl.opengl.GL11.*;
 public class RenderingEngine extends MappedValues {
 	private final Window window;
 
+//	private ProfileTimer renderProfileTimer = new ProfileTimer();
+
 	private HashMap<String, Integer> samplerMap;
 	private ArrayList<BaseLight> lights;
 	private BaseLight activeLight;
@@ -29,6 +31,7 @@ public class RenderingEngine extends MappedValues {
 	public RenderingEngine(Window window) {
 		super();
 		this.window = window;
+
 		lights = new ArrayList<>();
 
 		samplerMap = new HashMap<>();
@@ -55,6 +58,11 @@ public class RenderingEngine extends MappedValues {
 		ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);
 	}
 
+	public double displayRenderTime(double dividend) {
+//		return renderProfileTimer.displayAndReset("Render time: ", dividend);
+		return 0;
+	}
+
 	public Vector3f getAmbientLight() {
 		return ambientLight;
 	}
@@ -65,6 +73,7 @@ public class RenderingEngine extends MappedValues {
 
 	public void render(GameObject object) {
 		if (mainCamera == null) System.err.println("Main camera not found.");
+//		renderProfileTimer.startInvocation();
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -83,6 +92,7 @@ public class RenderingEngine extends MappedValues {
 		glDepthFunc(GL_LESS);
 		glDepthMask(true);
 		glDisable(GL_BLEND);
+//		renderProfileTimer.stopInvocation();
 	}
 
 	public void addLight(BaseLight light) {

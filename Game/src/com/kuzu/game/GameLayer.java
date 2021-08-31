@@ -2,6 +2,8 @@ package com.kuzu.game;
 
 import com.kuzu.engine.components.MeshRenderer;
 import com.kuzu.engine.components.camera.CameraComponent;
+import com.kuzu.engine.components.camera.FreeLook;
+import com.kuzu.engine.components.camera.FreeMove;
 import com.kuzu.engine.components.camera.PerspectiveCamera;
 import com.kuzu.engine.components.light.Attenuation;
 import com.kuzu.engine.components.light.DirectionalLight;
@@ -13,9 +15,8 @@ import com.kuzu.engine.core.Input;
 import com.kuzu.engine.event.MouseEvents;
 import com.kuzu.engine.math.MathUtils;
 import com.kuzu.engine.rendering.*;
-import com.kuzu.event.EventBus;
-import com.kuzu.event.api.EventSubscriber;
-import org.joml.Quaternionf;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -31,23 +32,29 @@ public class GameLayer extends Layer {
 
 	private GameObject root;
 	private GameObject monkey;
+	private GameObject cube;
 	private GameObject plane;
+	private GameObject player;
 	private GameObject camera;
 	private GameObject sun;
 
 	private GameObject[] pointLights;
 
+	private SpotLight spot;
+
 	private float temp = 0f;
 
 	public GameLayer() {
-		gameEventBus = new EventBus();
+		gameEventBus = EventBus.builder().logNoSubscriberMessages(false).build();
 
 		root = new GameObject();
 
 		MeshRenderer susanRenderer = new MeshRenderer(new Mesh("susan.obj"), new Material(new Texture("uv.png")));
-		monkey = new GameObject(new Vector3f(0, 2, 0)).addComponent(susanRenderer);
-
+		MeshRenderer cubeRenderer = new MeshRenderer(new Mesh("cube2.obj"), new Material(new Texture("uv.png")));
 		MeshRenderer planeRenderer = new MeshRenderer(new Mesh("plane.obj"), new Material(new Texture("color.png")));
+
+		monkey = new GameObject(new Vector3f(0, 1.5f, 0)).addComponent(susanRenderer);
+		cube = new GameObject(new Vector3f(0, 0, 0)).addComponent(cubeRenderer);
 		plane = new GameObject().addComponent(planeRenderer);
 		plane.getTransform().setScale(new Vector3f(10f));
 
@@ -56,37 +63,53 @@ public class GameLayer extends Layer {
 		float aspectRatio = width / height;
 		PerspectiveCamera perspectiveCamera = new PerspectiveCamera(FOV, aspectRatio, zNear, zFar);
 		CameraComponent cameraComponent = new CameraComponent(perspectiveCamera);
-		cameraComponent.setWindowCenter(new Vector2f(width / 2, height / 2));
-		camera = new GameObject(new Vector3f(0, 10, 5)).addComponent(cameraComponent);
-		camera.getTransform().lookAt(monkey.getTransform().getPos(), MathUtils.UP);
+
+		FreeMove freeMove = new FreeMove(2);
+		FreeLook freeLookBody = new FreeLook(1, true);
+		FreeLook freeLookHead = new FreeLook(1, false);
+		freeLookBody.setWindowCenter(new Vector2f(width / 2, height / 2));
+		freeLookHead.setWindowCenter(new Vector2f(width / 2, height / 2));
+
+		camera = new GameObject();
+		camera.addComponent(cameraComponent);
+		camera.getTransform().setPos(new Vector3f(0, 0, -7));
+		camera.getRot().rotateY((float) Math.PI);
 
 		DirectionalLight directionalLight = new DirectionalLight(COLOR1, 0.6f);
-		sun = new GameObject(new Vector3f(5, 10, 0)).addComponent(directionalLight);
-		sun.getTransform().getRot().lookAlong(new Vector3f(1, 1, 1), MathUtils.UP);
+		sun = new GameObject(new Vector3f(0f, 0, 0)).addComponent(directionalLight);
+		sun.getTransform().lookAt(cube.getTransform().getTransformedPos(), MathUtils.UP);
+		System.out.println(sun.getTransform().getTransformedRot());
 
-		SpotLight spot = new SpotLight(COLOR2, 0.6f, new Attenuation(0, 0, 0.1f), 0.7f);
-//		spotLight = new GameObject(new Vector3f(-5,1,0)).addComponent(spot);
-		camera.addComponent(spot);
+		spot = new SpotLight(COLOR2, 0.6f, new Attenuation(0, 0, 0.1f), 0.7f);
+		GameObject spotLight = new GameObject();
+		spotLight.getTransform().setPos(new Vector3f(0, 3, 0));
+		spotLight.getRot().rotateX((float) Math.PI / 2);
+		spotLight.addComponent(spot);
 
 		int lightFieldWidth = 5;
 		int lightFieldHeight = 5;
 
-		float lightFieldStartX = 0;
-		float lightFieldStartY = 0;
 		float lightFieldStepX = 2;
 		float lightFieldStepY = 2;
+		float lightFieldStartX = -2 * lightFieldStepX;
+		float lightFieldStartY = -2 * lightFieldStepY;
 
 		pointLights = new GameObject[lightFieldWidth * lightFieldHeight];
 		for (int i = 0; i < lightFieldWidth; i++) {
 			for (int j = 0; j < lightFieldHeight; j++) {
-				System.out.println(new Vector3f(lightFieldStartX + lightFieldStepX * i, 1, lightFieldStartY + lightFieldStepY * j));
-				pointLights[i * lightFieldWidth + j] = new GameObject(new Vector3f(lightFieldStartX + lightFieldStepX * i, 1, lightFieldStartY + lightFieldStepY * j))
+				pointLights[i * lightFieldWidth + j] = new GameObject(new Vector3f(lightFieldStartX + lightFieldStepX * i, -3, lightFieldStartY + lightFieldStepY * j))
 						.addComponent(new PointLight(COLOR3, 0.4f, new Attenuation(0, 0, 1)));
 			}
 		}
 
-		root.addChildren(monkey, plane, sun, camera);
-		root.addChildren(pointLights);
+		monkey.addChild(camera);
+		monkey.addComponent(freeLookHead);
+		player = new GameObject(new Vector3f(0, 0, 0));
+		player.addComponents(freeMove, freeLookBody, cubeRenderer);
+		player.addChild(monkey);
+		player.addChild(spotLight);
+
+		root.addChildren(plane, sun, player);
 	}
 
 	@Override
@@ -114,8 +137,23 @@ public class GameLayer extends Layer {
 
 	public void update(float delta) {
 		temp += delta;
+		temp %= 2 * (float) Math.PI;
 		root.updateAll(delta);
-		monkey.getTransform().setRot(new Quaternionf().rotateXYZ(0, temp %= 2 * (float) Math.PI, 0));
+//		camera.getTransform().setPos(new Vector3f(5*(float)Math.cos(temp), 5, 5*(float)Math.sin(temp)));
+//		camera.getTransform().lookAt(monkey.getTransform().getPos(), MathUtils.UP);
+//		monkey.getTransform().setRot(new Quaternionf().rotateXYZ(0, temp, 0));
+//		monkey.getTransform().getRot().rotateY(delta);
+//		float radius = 2 - 2*(float)Math.sin(temp) + (float)Math.sin(temp)*(float)Math.sqrt(Math.abs(Math.cos(temp)))/(float)(Math.sin(temp)+1.4f);
+//		float radius = (float)Math.sin(Math.pow(2, temp))-1.7f;
+		float radius = 3.0f * (float) Math.cos(2 * temp);
+//		sun.getTransform().setPos(new Vector3f(radius*3,10,0));
+//		cube.getTransform().setPos(new Vector3f(radius*3, 0, -4));
+//		monkey.getTransform().setPos(new Vector3f(radius*3,0,0));
+//		cube.getTransform().setPos(MathUtils.getRight(camera.getTransform().getRot().conjugate(new Quaternionf())).add(0,0,-4));
+//		Quaternionf rot = camera.getTransform().getRot();
+//		camera.getTransform().setRot(new Quaternionf((float)Math.sin(temp),0,0,rot.w));
+//		camera.getTransform().setRot(monkey.getTransform().getRot());
+//		monkey.p
 	}
 
 	@Override
@@ -123,9 +161,16 @@ public class GameLayer extends Layer {
 		engine.render(root);
 	}
 
-	@EventSubscriber
+	@Override
+	public double displayTimes(double dividend) {
+		return 0;
+	}
+
+	@Subscribe
 	public void onMouseDown(MouseEvents.MouseButtonPressedEvent e) {
 		System.out.println("Button: " + e.getMouseButton());
 		System.out.println(e.getInput().getMousePosition());
+		System.out.println(cube.getTransform().getTransformedPos());
+		System.out.println(MathUtils.getForward(camera.getTransform().getTransformedRot()));
 	}
 }

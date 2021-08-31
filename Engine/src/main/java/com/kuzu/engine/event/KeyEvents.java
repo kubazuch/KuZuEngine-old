@@ -1,10 +1,9 @@
 package com.kuzu.engine.event;
 
 import com.kuzu.engine.core.Input;
-import com.kuzu.event.api.Event;
 
 public class KeyEvents {
-	public static class KeyEvent extends Event {
+	public static class KeyEvent {
 		protected int keyCode;
 		protected Input input;
 

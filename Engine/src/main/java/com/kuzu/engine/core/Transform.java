@@ -36,10 +36,13 @@ public class Transform {
 	}
 
 	public void update() {
-		if (oldPos != null) {
-			oldPos.set(pos);
-			oldRot.set(rot);
-			oldScale.set(scale);
+		if (hasChanged()) {
+			if (oldPos != null)
+				oldPos.set(pos);
+			if (oldRot != null)
+				oldRot.set(rot);
+			if (oldScale != null)
+				oldScale.set(scale);
 		} else {
 			oldPos = pos.add(1f, 1f, 1f, new Vector3f());
 			oldRot = rot.mul(0.5f, 0.5f, 0.5f, 0.5f, new Quaternionf());
@@ -55,12 +58,10 @@ public class Transform {
 		rot = rotation.mul(rot, new Quaternionf()).normalize();
 	}
 
-	public void lookAt(Vector3f point, Vector3f up) {
-		rot = getLookAtRotation(point, up);
-	}
-
-	public Quaternionf getLookAtRotation(Vector3f point, Vector3f up) {
-		return new Quaternionf().lookAlong(point.sub(pos, new Vector3f()).normalize(), up);
+	public Quaternionf lookAt(Vector3f point, Vector3f up) {
+		System.out.println(point.sub(pos, new Vector3f()).normalize());
+		rot = new Quaternionf().lookAlong(point.sub(pos, new Vector3f()).normalize(), up);
+		return rot;
 	}
 
 	public boolean hasChanged() {

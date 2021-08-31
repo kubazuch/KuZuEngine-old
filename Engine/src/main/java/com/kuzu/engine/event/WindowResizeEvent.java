@@ -1,8 +1,6 @@
 package com.kuzu.engine.event;
 
-import com.kuzu.event.api.Event;
-
-public class WindowResizeEvent extends Event {
+public class WindowResizeEvent {
 	private int width;
 	private int height;
 

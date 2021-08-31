@@ -38,18 +38,18 @@ public class OBJModel {
 				.forEachOrdered(tokenArray -> {
 					switch (tokenArray[0]) {
 						case "v":
-							positions.add(new Vector3f(Float.valueOf(tokenArray[1]),
-									Float.valueOf(tokenArray[2]),
-									Float.valueOf(tokenArray[3])));
+							positions.add(new Vector3f(Float.parseFloat(tokenArray[1]),
+									Float.parseFloat(tokenArray[2]),
+									Float.parseFloat(tokenArray[3])));
 							break;
 						case "vt":
-							texCoords.add(new Vector2f(Float.valueOf(tokenArray[1]),
-									Float.valueOf(tokenArray[2])));
+							texCoords.add(new Vector2f(Float.parseFloat(tokenArray[1]),
+									Float.parseFloat(tokenArray[2])));
 							break;
 						case "vn":
-							normals.add(new Vector3f(Float.valueOf(tokenArray[1]),
-									Float.valueOf(tokenArray[2]),
-									Float.valueOf(tokenArray[3])));
+							normals.add(new Vector3f(Float.parseFloat(tokenArray[1]),
+									Float.parseFloat(tokenArray[2]),
+									Float.parseFloat(tokenArray[3])));
 							break;
 						case "f":
 							for (int i = 0; i < tokenArray.length - 3; i++) {

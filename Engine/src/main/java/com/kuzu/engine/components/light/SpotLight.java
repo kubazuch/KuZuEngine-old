@@ -2,6 +2,7 @@ package com.kuzu.engine.components.light;
 
 import com.kuzu.engine.math.MathUtils;
 import com.kuzu.engine.rendering.shader.ForwardSpotShader;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class SpotLight extends PointLight {
@@ -14,7 +15,7 @@ public class SpotLight extends PointLight {
 	}
 
 	public Vector3f getDirection() {
-		return MathUtils.getForward(getTransform().getTransformedRot());
+		return MathUtils.getForward(getTransform().getTransformedRot().conjugate(new Quaternionf()));
 	}
 
 	public float getCutoff() {

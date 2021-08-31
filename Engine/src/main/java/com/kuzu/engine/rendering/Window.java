@@ -10,13 +10,12 @@ import com.kuzu.engine.event.MouseEvents.MouseMovedEvent;
 import com.kuzu.engine.event.MouseEvents.MouseScrolledEvent;
 import com.kuzu.engine.event.WindowCloseEvent;
 import com.kuzu.engine.event.WindowResizeEvent;
-import com.kuzu.event.api.Event;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.jni.JNINativeInterface;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -77,7 +76,7 @@ public class Window {
 				data.height = height;
 
 				WindowResizeEvent event = new WindowResizeEvent(width, height);
-				data.eventCallbackFn.apply(event);
+				data.eventCallbackFn.accept(event);
 			}
 		}));
 
@@ -87,7 +86,7 @@ public class Window {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 
 				WindowCloseEvent event = new WindowCloseEvent();
-				data.eventCallbackFn.apply(event);
+				data.eventCallbackFn.accept(event);
 			}
 		}));
 
@@ -98,20 +97,17 @@ public class Window {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 
 				switch (action) {
-					case GLFW_PRESS: {
+					case GLFW_PRESS -> {
 						KeyPressedEvent event = new KeyPressedEvent(key, 0, input);
-						data.eventCallbackFn.apply(event);
-						break;
+						data.eventCallbackFn.accept(event);
 					}
-					case GLFW_RELEASE: {
+					case GLFW_RELEASE -> {
 						KeyReleasedEvent event = new KeyReleasedEvent(key, input);
-						data.eventCallbackFn.apply(event);
-						break;
+						data.eventCallbackFn.accept(event);
 					}
-					case GLFW_REPEAT: {
+					case GLFW_REPEAT -> {
 						KeyPressedEvent event = new KeyPressedEvent(key, 1, input);
-						data.eventCallbackFn.apply(event);
-						break;
+						data.eventCallbackFn.accept(event);
 					}
 				}
 			}
@@ -123,7 +119,7 @@ public class Window {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 
 				KeyTypedEvent event = new KeyTypedEvent(codepoint, input);
-				data.eventCallbackFn.apply(event);
+				data.eventCallbackFn.accept(event);
 			}
 		}));
 
@@ -132,15 +128,13 @@ public class Window {
 			public void invoke(long window, int button, int action, int mods) {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 				switch (action) {
-					case GLFW_PRESS: {
+					case GLFW_PRESS -> {
 						MouseButtonPressedEvent event = new MouseButtonPressedEvent(button, input);
-						data.eventCallbackFn.apply(event);
-						break;
+						data.eventCallbackFn.accept(event);
 					}
-					case GLFW_RELEASE: {
+					case GLFW_RELEASE -> {
 						MouseButtonReleasedEvent event = new MouseButtonReleasedEvent(button, input);
-						data.eventCallbackFn.apply(event);
-						break;
+						data.eventCallbackFn.accept(event);
 					}
 				}
 			}
@@ -148,27 +142,30 @@ public class Window {
 
 		glfwSetScrollCallback(this.window, (scrollCallback = new GLFWScrollCallback() {
 			@Override
-			public void invoke(long window, double xoffset, double yoffset) {
+			public void invoke(long window, double xOffset, double yOffset) {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 
-				MouseScrolledEvent event = new MouseScrolledEvent((float) xoffset, (float) yoffset, input);
-				data.eventCallbackFn.apply(event);
+				MouseScrolledEvent event = new MouseScrolledEvent((float) xOffset, (float) yOffset, input);
+				data.eventCallbackFn.accept(event);
 			}
 		}));
 
 		glfwSetCursorPosCallback(this.window, (cursorPosCallback = new GLFWCursorPosCallback() {
 			@Override
-			public void invoke(long window, double xpos, double ypos) {
+			public void invoke(long window, double xPos, double yPos) {
 				WindowData data = MemoryUtil.memGlobalRefToObject(glfwGetWindowUserPointer(window));
 
-				MouseMovedEvent event = new MouseMovedEvent((float) xpos, (float) ypos, input);
-				data.eventCallbackFn.apply(event);
+				MouseMovedEvent event = new MouseMovedEvent((float) xPos, (float) yPos, input);
+				data.eventCallbackFn.accept(event);
 			}
 		}));
 	}
 
-	public void render() {
+	public void update() {
 		glfwPollEvents();
+	}
+
+	public void swapBuffers() {
 		glfwSwapBuffers(this.window);
 	}
 
@@ -203,7 +200,7 @@ public class Window {
 		if (GLFWWindowCount == 0) glfwTerminate();
 	}
 
-	public void setEventCallback(Function<Event, Boolean> fn) {
+	public void setEventCallback(Consumer<Object> fn) {
 		this.data.eventCallbackFn = fn;
 	}
 
@@ -223,6 +220,6 @@ public class Window {
 		public String title;
 		public int width, height;
 		public boolean vSync;
-		public Function<Event, Boolean> eventCallbackFn;
+		public Consumer<Object> eventCallbackFn;
 	}
 }

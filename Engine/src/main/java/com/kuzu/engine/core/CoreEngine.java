@@ -1,14 +1,14 @@
 package com.kuzu.engine.core;
 
+import com.kuzu.engine.event.EventUtil;
 import com.kuzu.engine.event.WindowCloseEvent;
 import com.kuzu.engine.event.WindowResizeEvent;
 import com.kuzu.engine.rendering.Layer;
 import com.kuzu.engine.rendering.LayerStack;
 import com.kuzu.engine.rendering.RenderingEngine;
 import com.kuzu.engine.rendering.Window;
-import com.kuzu.event.EventBus;
-import com.kuzu.event.api.EventPriority;
-import com.kuzu.event.api.EventSubscriber;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ListIterator;
 
@@ -16,6 +16,10 @@ import static org.lwjgl.opengl.GL11.glViewport;
 
 public class CoreEngine {
 	private boolean minimized = false;
+
+//	private ProfileTimer sleepTimer = new ProfileTimer();
+//	private ProfileTimer swapBufferTimer = new ProfileTimer();
+//	private ProfileTimer windowUpdateTimer = new ProfileTimer();
 
 	private boolean isRunning;
 	private RenderingEngine renderingEngine;
@@ -27,6 +31,8 @@ public class CoreEngine {
 	private EventBus windowEventBus;
 	private double frameTime;
 
+	private int count = 0;
+
 	private LayerStack layerStack = new LayerStack();
 
 	public CoreEngine(int width, int height, double framerate, String title) {
@@ -37,13 +43,13 @@ public class CoreEngine {
 		this.frameTime = 1.0 / framerate;
 
 		this.window = new Window(width, height, title);
-		this.windowEventBus = new EventBus();
+		this.windowEventBus = EventBus.builder().logNoSubscriberMessages(false).build();
 		this.window.setEventCallback(windowEventBus::post);
 
 		this.renderingEngine = new RenderingEngine(window);
 
-		this.windowEventBus.register(this);
-		this.windowEventBus.register(renderingEngine);
+		EventUtil.register(this.windowEventBus, this);
+		EventUtil.register(this.windowEventBus, renderingEngine);
 	}
 
 	public void pushLayer(Layer layer) {
@@ -55,7 +61,7 @@ public class CoreEngine {
 
 		ListIterator<Layer> reverse = layerStack.reverseIterator();
 		while (reverse.hasPrevious())
-			windowEventBus.register(reverse.previous());
+			EventUtil.register(windowEventBus, reverse.previous());
 	}
 
 	public void pushOverlay(Layer overlay) {
@@ -67,7 +73,7 @@ public class CoreEngine {
 
 		ListIterator<Layer> reverse = layerStack.reverseIterator();
 		while (reverse.hasPrevious())
-			windowEventBus.register(reverse.previous());
+			EventUtil.register(windowEventBus, reverse.previous());
 	}
 
 	public void start() {
@@ -111,9 +117,23 @@ public class CoreEngine {
 
 				if (frameCounter >= 1.0) {
 					window.setTitle(title + " | " + frames + "FPS");
-					System.out.println(frames + "FPS");
+
+//					double totalTime = ((1000.0 * frameCounter)/((double)frames));
+//					double totalMeasuredTime = 0.0;
+//					for(Layer layer : layerStack)
+//						totalMeasuredTime += layer.displayTimes(frames);
+//					totalMeasuredTime += renderingEngine.displayRenderTime(frames);
+//					totalMeasuredTime += sleepTimer.displayAndReset("Sleep time: ", frames);
+//					totalMeasuredTime += windowUpdateTimer.displayAndReset("Window update time: ", frames);
+//					totalMeasuredTime += swapBufferTimer.displayAndReset("Buffer swap time: ", frames);
+//
+//					System.out.println("Other time: " + (totalTime - totalMeasuredTime) + " ms");
+//					System.out.println("Total time: " + totalTime + " ms");
+
 					frames = 0;
 					frameCounter = 0;
+					if (count == 100)
+						stop();
 				}
 			}
 
@@ -122,7 +142,9 @@ public class CoreEngine {
 				frames++;
 			} else {
 				try {
+//					sleepTimer.startInvocation();
 					Thread.sleep(1);
+//					sleepTimer.stopInvocation();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -137,12 +159,12 @@ public class CoreEngine {
 			layer.render(renderingEngine);
 		}
 
-		window.render();
+		window.update();
+		window.swapBuffers();
 	}
 
 	private void cleanUp() {
 		window.dispose();
-		windowEventBus.shutdown();
 		layerStack.dispose();
 	}
 
@@ -154,12 +176,12 @@ public class CoreEngine {
 		return windowEventBus;
 	}
 
-	@EventSubscriber
+	@Subscribe
 	public void onWindowCloseEvent(WindowCloseEvent ignored) {
 		stop();
 	}
 
-	@EventSubscriber(priority = EventPriority.LOW)
+	@Subscribe(priority = -10)
 	public void onWindowResizeEvent(WindowResizeEvent event) {
 		glViewport(0, 0, event.getWidth(), event.getHeight());
 

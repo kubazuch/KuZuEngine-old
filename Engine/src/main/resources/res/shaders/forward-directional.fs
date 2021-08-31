@@ -49,7 +49,7 @@ vec4 calcLight(BaseLight base, vec3 direction, vec3 normal, vec3 worldPos) {
 }
 
 vec4 calcDirectionalLight(DirectionalLight directionalLight, vec3 normal, vec3 worldPos) {
-    return calcLight(directionalLight.base, -directionalLight.direction, normal, worldPos);
+    return calcLight(directionalLight.base, directionalLight.direction, normal, worldPos);
 }
 
 void main() {

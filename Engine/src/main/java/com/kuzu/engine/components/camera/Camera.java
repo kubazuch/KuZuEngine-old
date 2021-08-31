@@ -8,7 +8,6 @@ import org.joml.Vector3f;
 public abstract class Camera {
 	protected Transform transform;
 	protected Matrix4f projectionMatrix;
-	protected Matrix4f viewMatrix;
 
 	public Camera(Matrix4f projection, Transform transform) {
 		this.transform = transform;
@@ -42,7 +41,9 @@ public abstract class Camera {
 	}
 
 	public Matrix4f getView() {
-		return new Matrix4f().rotate(transform.getRot()).translate(-transform.getPos().x, -transform.getPos().y, -transform.getPos().z);
+		return new Matrix4f()
+				.rotate(transform.getTransformedRot().conjugate())
+				.translate(-transform.getTransformedPos().x, -transform.getTransformedPos().y, -transform.getTransformedPos().z);
 	}
 
 	public Matrix4f getProjection() {

@@ -1,5 +1,6 @@
 package com.kuzu.engine.math;
 
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -37,7 +38,7 @@ public class MathUtils {
 	}
 
 	public static Vector3f getForward(Quaternionf rot) {
-		return rot.positiveZ(new Vector3f()).negate();
+		return rot.positiveZ(new Vector3f());
 	}
 
 	public static Vector3f getBack(Quaternionf rot) {
@@ -62,5 +63,26 @@ public class MathUtils {
 
 	public static float max(Vector3f in) {
 		return Math.max(in.x, Math.max(in.y, in.z));
+	}
+
+	public static Matrix4f initPerspective(float fov, float aspectRatio, float zNear, float zFar) {
+		float zRange = zNear - zFar;
+		float tanHalfFOV = (float) Math.tan(fov / 2);
+
+		return new Matrix4f(1 / (tanHalfFOV * aspectRatio), 0, 0, 0,
+				0, 1 / (tanHalfFOV), 0, 0,
+				0, 0, (-zNear - zFar) / zRange, 1,
+				0, 0, 2 * zFar * zNear / zRange, 0);
+	}
+
+	public static Matrix4f initPerspective2(float fov, float aspectRatio, float zNear, float zFar) {
+		float zRange = zFar - zNear;
+		float tanHalfFOV = (float) Math.tan(fov / 2);
+
+		return new Matrix4f(1 / (tanHalfFOV * aspectRatio), 0, 0, 0,
+				0, 1 / (tanHalfFOV), 0, 0,
+				0, 0, (-zNear - zFar) / zRange, -1,
+				0, 0, -2 * zFar * zNear / zRange, 0);
+
 	}
 }

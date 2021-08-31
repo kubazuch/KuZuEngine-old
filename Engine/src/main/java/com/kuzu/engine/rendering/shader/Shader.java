@@ -198,7 +198,6 @@ public abstract class Shader {
 	private void addUniform(String uniformName, String uniformType, HashMap<String, ArrayList<GLSLStruct>> structs) {
 		boolean addThis = true;
 		ArrayList<GLSLStruct> structComponents = structs.get(uniformType);
-		System.out.println(uniformName);
 		if (structComponents != null) {
 			addThis = false;
 			for (GLSLStruct struct : structComponents) {

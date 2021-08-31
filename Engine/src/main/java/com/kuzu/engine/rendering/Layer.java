@@ -34,4 +34,6 @@ public abstract class Layer {
 
 	public abstract void render(RenderingEngine engine);
 
+	public abstract double displayTimes(double dividend);
+
 }
